@@ -2,16 +2,19 @@
 # define SNAKE_HPP
 
 # include <iostream>
+# include "Map.hpp"
 # include <SFML/Graphics.hpp>
 
 class Snake
 {
 	private:
 
-	sf::Texture	headTexture;
-	sf::Sprite	snakeSprite;
+	sf::Texture	snakeHeadTexture;
+	sf::Sprite	snakeHeadSprite;
 	sf::Clock	snakeClock;
+
 	int			direction; // 0 up, 1 right, 2 down, 3 left
+	int			prev_direction;
 	int			moveSpeed;
 
 	public:
@@ -23,6 +26,8 @@ class Snake
 	void	drawSnake(sf::RenderWindow &window);
 	void	moveSnake();
 	void	changeDirection(sf::Event &keypress);
+	int		checkSnakePos();
+
 };
 
 #endif

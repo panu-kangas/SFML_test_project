@@ -5,7 +5,7 @@
 Snake::Snake()
 {
 	direction = 0;
-	moveSpeed = 20;
+	moveSpeed = 4;
 
 	std::cout << "Snake got created" << std::endl;
 }
@@ -16,42 +16,53 @@ Snake::Snake()
 
 void	Snake::Init(sf::RenderWindow &window)
 {
-	if (!headTexture.loadFromFile("sprites/snake_head.png"))
+	if (!snakeHeadTexture.loadFromFile("sprites/snake_head.png"))
 	{
 		std::cerr << "Texture loading failed. Exiting program!" << std::endl;
 		exit (1);
 	};
 
-	snakeSprite.setTexture(headTexture);
+	snakeHeadSprite.setTexture(snakeHeadTexture);
 
 	sf::Vector2u windowSize = window.getSize();
-	snakeSprite.setPosition(windowSize.x / 2, windowSize.y / 2);
+	snakeHeadSprite.setPosition(windowSize.x / 2, windowSize.y / 2);
 }
 
 void	Snake::drawSnake(sf::RenderWindow &window)
 {
-	window.draw(snakeSprite);
+	window.draw(snakeHeadSprite);
 }
 
 void	Snake::changeDirection(sf::Event &keypress)
 {
+	int	temp_dir = this->direction;
+	int	check_dir;
+
 	switch (keypress.key.scancode)
 	{
 		case sf::Keyboard::Scan::W :
-			direction = 0;
+			this->direction = 0;
 			break ;
 		case sf::Keyboard::Scan::D :
-			direction = 1;
+			this->direction = 1;
 			break ;
 		case sf::Keyboard::Scan::S :
-			direction = 2;
+			this->direction = 2;
 			break ;
 		case sf::Keyboard::Scan::A :
-			direction = 3;
+			this->direction = 3;
 			break ;
 		default:
 			return ;
 	}
+
+	check_dir = direction - 2;
+	if (check_dir < 0)
+		check_dir = 4 + check_dir;
+
+	if (temp_dir == check_dir)
+		this->direction = temp_dir;
+
 }
 
 void	Snake::moveSnake()
@@ -59,9 +70,8 @@ void	Snake::moveSnake()
 	int x = 0;
 	int y = 0;
 
-	if (snakeClock.getElapsedTime().asMilliseconds() < 500)
+	if (snakeClock.getElapsedTime().asMilliseconds() < 50)
 		return ;
-
 
 	switch (this->direction)
 	{
@@ -81,7 +91,22 @@ void	Snake::moveSnake()
 			x = 0;
 	}
 
-	snakeSprite.move(x * moveSpeed, y * moveSpeed);
+	snakeHeadSprite.move(x * moveSpeed, y * moveSpeed);
 	snakeClock.restart();
 
 }
+
+// Utils
+
+int	Snake::checkSnakePos()
+{
+	sf::Vector2f snakePos = snakeHeadSprite.getPosition();
+
+	if (snakePos.x <= TILE_SIZE || snakePos.x >= WINDOW_WIDTH - (TILE_SIZE * 2)
+	|| snakePos.y <= TILE_SIZE || snakePos.y >= WINDOW_HEIGHT - (TILE_SIZE * 2))
+		return (1);
+	else
+		return (0);
+
+}
+

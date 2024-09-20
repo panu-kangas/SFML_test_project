@@ -2,15 +2,23 @@
 #include "Map.hpp"
 
 
-int main()
+int main(int argc, char *argv[])
 {
+
+	if (argc != 2)
+	{
+		std::cerr << RED << "\nInvalid amount of arguments; please provide one map-file as argument\n"
+		<< RESET << std::endl;
+		return (1);
+	}
+
     auto window = sf::RenderWindow{ { WINDOW_WIDTH, WINDOW_HEIGHT }, "SFML test" };
     window.setFramerateLimit(144); // check this later
 
 	int	state = 0; // JUST A TEST
 
 	Map		map;
-	map.initMap();
+	map.initMap(argv[1]);
 
 	Snake	snake;
 	snake.Init(window);
@@ -19,7 +27,7 @@ int main()
     {
 		if (state == 1)
 		{
-			std::cout << "\033[31m" << "YOU LOSE!" << "\033[0m" << std::endl;
+			std::cout << "\033[31m" << "\nYOU LOSE!\n" << "\033[0m" << std::endl;
 			window.close();
 			break ;
 		}
@@ -46,7 +54,7 @@ int main()
 		snake.moveSnake();
 		snake.drawSnake(window);
 
-		state = snake.checkSnakePos();			
+		state = map.checkWallCollisions(snake.getSnakeSprite());		
 
         window.display();
     }

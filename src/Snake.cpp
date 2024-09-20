@@ -5,9 +5,10 @@
 Snake::Snake()
 {
 	direction = 0;
+	prev_direction = 0;
 	moveSpeed = 4;
 
-	std::cout << "Snake got created" << std::endl;
+	// std::cout << "Snake got created" << std::endl;
 }
 
 
@@ -26,6 +27,9 @@ void	Snake::Init(sf::RenderWindow &window)
 
 	sf::Vector2u windowSize = window.getSize();
 	snakeHeadSprite.setPosition(windowSize.x / 2, windowSize.y / 2);
+
+	coordX = (windowSize.x / 2) + (TILE_SIZE / 2); // These need to be set based on the map!!
+	coordY = (windowSize.y / 2) + (TILE_SIZE / 2); // These need to be set based on the map!!
 }
 
 void	Snake::drawSnake(sf::RenderWindow &window)
@@ -62,6 +66,8 @@ void	Snake::changeDirection(sf::Event &keypress)
 
 	if (temp_dir == check_dir)
 		this->direction = temp_dir;
+	else
+		this->prev_direction = temp_dir;
 
 }
 
@@ -69,8 +75,9 @@ void	Snake::moveSnake()
 {
 	int x = 0;
 	int y = 0;
+	int	moveDir;
 
-	if (snakeClock.getElapsedTime().asMilliseconds() < 50)
+	if (snakeClock.getElapsedTime().asMilliseconds() < 25)
 		return ;
 
 	switch (this->direction)
@@ -92,21 +99,19 @@ void	Snake::moveSnake()
 	}
 
 	snakeHeadSprite.move(x * moveSpeed, y * moveSpeed);
+
+	coordX += (x * moveSpeed);
+	coordY += (y * moveSpeed);
+
 	snakeClock.restart();
 
 }
 
 // Utils
 
-int	Snake::checkSnakePos()
+sf::Sprite &Snake::getSnakeSprite()
 {
-	sf::Vector2f snakePos = snakeHeadSprite.getPosition();
-
-	if (snakePos.x <= TILE_SIZE || snakePos.x >= WINDOW_WIDTH - (TILE_SIZE * 2)
-	|| snakePos.y <= TILE_SIZE || snakePos.y >= WINDOW_HEIGHT - (TILE_SIZE * 2))
-		return (1);
-	else
-		return (0);
-
+	return (this->snakeHeadSprite);
 }
+
 

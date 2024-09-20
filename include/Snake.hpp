@@ -16,18 +16,20 @@ class Snake
 	int			direction; // 0 up, 1 right, 2 down, 3 left
 	int			prev_direction;
 	int			moveSpeed;
+	int			coordX; // coord in the middle of snake head
+	int			coordY; // coord in the middle of snake head
 
 	public:
 
 	Snake();
-	~Snake() {std::cout << "Snake got destroyed" << std::endl;};
+	~Snake() {};
 
 	void	Init(sf::RenderWindow &window);
 	void	drawSnake(sf::RenderWindow &window);
 	void	moveSnake();
 	void	changeDirection(sf::Event &keypress);
-	int		checkSnakePos();
 
+	sf::Sprite &getSnakeSprite();
 };
 
 #endif

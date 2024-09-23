@@ -2,8 +2,12 @@
 # define SNAKE_HPP
 
 # include <iostream>
-# include "Map.hpp"
+# include <vector>
 # include <SFML/Graphics.hpp>
+
+# include "Constants.hpp"
+# include "SnakeBody.hpp"
+
 
 class Snake
 {
@@ -13,11 +17,17 @@ class Snake
 	sf::Sprite	snakeHeadSprite;
 	sf::Clock	snakeClock;
 
-	int			direction; // 0 up, 1 right, 2 down, 3 left
-	int			prev_direction;
+
+	sf::Texture				bodyTexture;
+	std::vector<SnakeBody>	bodyVec;
+	int						bodyCount;
+
+	int			curDirection; // 0 up, 1 right, 2 down, 3 left
+	int			newDirection;
 	int			moveSpeed;
-	int			coordX; // coord in the middle of snake head
-	int			coordY; // coord in the middle of snake head
+
+//	int			coordX; // coord in the middle of snake head
+//	int			coordY; // coord in the middle of snake head
 
 	public:
 

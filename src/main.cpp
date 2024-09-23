@@ -1,5 +1,17 @@
 #include "Snake.hpp"
 #include "Map.hpp"
+#include "ScoreCounter.hpp"
+
+
+sf::Vector2f makeVector2f(float x, float y)
+{
+	sf::Vector2f temp;
+
+	temp.x = x;
+	temp.y = y;
+
+	return (temp);
+}
 
 
 int main(int argc, char *argv[])
@@ -23,6 +35,12 @@ int main(int argc, char *argv[])
 	Snake	snake;
 	snake.Init(window);
 
+	ScoreCounter score;
+	score.initTextBox("fonts/pixel_font.ttf", 28);
+	score.setBackground(makeVector2f(112, 32), makeVector2f(0, 0), sf::Color::Black);
+
+
+
     while (window.isOpen())
     {
 		if (state == 1)
@@ -41,6 +59,7 @@ int main(int argc, char *argv[])
 			else if (event.type == sf::Event::KeyPressed)
 			{
 				snake.changeDirection(event);
+				score.addScore(100); // TEST
 
 				if (event.key.scancode == sf::Keyboard::Scan::Escape)
 					window.close(); // should I break ; here...?
@@ -53,6 +72,9 @@ int main(int argc, char *argv[])
 
 		snake.moveSnake();
 		snake.drawSnake(window);
+
+		score.setText(score.getScoreString(), makeVector2f(10, 0), sf::Color::Green);
+		score.drawText(window);
 
 		state = map.checkWallCollisions(snake.getSnakeSprite());		
 

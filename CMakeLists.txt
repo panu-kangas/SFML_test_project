@@ -13,7 +13,8 @@ FetchContent_Declare(SFML
     SYSTEM)
 FetchContent_MakeAvailable(SFML)
 
-add_executable(snake_2d src/main.cpp src/Snake.cpp src/Map.cpp)
+add_executable(snake_2d src/main.cpp src/Snake.cpp src/Map.cpp src/SnakeBody.cpp src/TextBox.cpp 
+src/ScoreCounter.cpp)
 target_link_libraries(snake_2d PRIVATE sfml-graphics)
 target_compile_features(snake_2d PRIVATE cxx_std_17)
 target_include_directories(snake_2d PRIVATE include)

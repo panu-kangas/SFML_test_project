@@ -6,13 +6,7 @@
 # include <vector>
 # include <SFML/Graphics.hpp>
 
-# define WINDOW_WIDTH	1024
-# define WINDOW_HEIGHT	736
-# define TILE_SIZE		32
-
-# define RED "\033[31m"
-# define GREEN "\033[32m"
-# define RESET "\033[0m"
+# include "Constants.hpp"
 
 //////////
 

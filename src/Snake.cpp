@@ -9,14 +9,13 @@ Snake::Snake()
 	this->moveSpeed = 4;
 	this->bodyCount = 3;
 
-	// std::cout << "Snake got created" << std::endl;
 }
 
 
 // Functionalities
 
 
-void	Snake::Init(sf::RenderWindow &window)
+void	Snake::Init(sf::RenderWindow &window, sf::Vector2i startPos)
 {
 	if (!this->snakeHeadTexture.loadFromFile("sprites/snake_head.png") \
 	|| !this->bodyTexture.loadFromFile("sprites/snake_body.png"))
@@ -25,23 +24,24 @@ void	Snake::Init(sf::RenderWindow &window)
 		exit (1);
 	};
 
-	snakeHeadSprite.setTexture(snakeHeadTexture);
+	this->snakeHeadSprite.setTexture(snakeHeadTexture);
 
-	sf::Vector2u windowSize = window.getSize();
-	snakeHeadSprite.setPosition(windowSize.x / 2, windowSize.y / 2);
+	this->snakeHeadSprite.setPosition(startPos.x * TILE_SIZE, startPos.y * TILE_SIZE);
+
+	this->snakeWorldCoord.x = startPos.x * TILE_SIZE;
+	this->snakeWorldCoord.y = startPos.y * TILE_SIZE;
+
 
 	SnakeBody tempBody;
 
 	for (int i = 0; i < this->bodyCount; i++)
 	{
-		tempBody.InitBody(window, this->bodyTexture, i);
+		tempBody.InitBody(window, this->bodyTexture, startPos, i);
 		this->bodyVec.push_back(tempBody);
 	}
 	for (int i = 0; i < this->bodyCount - 1; i++)
 		this->bodyVec[i].setNextBody(&this->bodyVec[i + 1]);
 
-//	coordX = (windowSize.x / 2) + (TILE_SIZE / 2); // These need to be set based on the map!!
-//	coordY = (windowSize.y / 2) + (TILE_SIZE / 2); // These need to be set based on the map!!
 }
 
 void	Snake::drawSnake(sf::RenderWindow &window)
@@ -116,12 +116,16 @@ void	Snake::moveSnake()
 			x = 0;
 	}
 
-	snakeHeadSprite.move(x * moveSpeed, y * moveSpeed);
+	this->snakeHeadSprite.move(x * moveSpeed, y * moveSpeed);
+
+	this->snakeWorldCoord.x += x * moveSpeed;
+	this->snakeWorldCoord.y += y * moveSpeed;
+
 
 	for (int i = 0; i < this->bodyCount; i++)
 		this->bodyVec[i].moveSnakeBody();
 
-	snakeClock.restart();
+	this->snakeClock.restart();
 
 }
 
@@ -130,6 +134,11 @@ void	Snake::moveSnake()
 sf::Sprite &Snake::getSnakeSprite()
 {
 	return (this->snakeHeadSprite);
+}
+
+sf::Vector2f Snake::getSnakeWorldCoord()
+{
+	return (this->snakeWorldCoord);
 }
 
 

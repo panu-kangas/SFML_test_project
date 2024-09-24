@@ -11,7 +11,7 @@ class ScoreCounter : public TextBox
 
 	public:
 
-	ScoreCounter() {};
+	ScoreCounter() : score(0) {};
 	~ScoreCounter() {};
 
 	std::string	getScoreString();

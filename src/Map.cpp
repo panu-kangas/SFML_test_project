@@ -17,7 +17,9 @@ Map::~Map()
 
 void	Map::initMap(std::string filename)
 {
-	if (!wallTexture.loadFromFile("sprites/wall.png") || !grassTexture.loadFromFile("sprites/grass.png"))
+	if (!this->wallTexture.loadFromFile("sprites/wall.png") \
+	|| !this->grassTexture.loadFromFile("sprites/grass.png") \
+	|| !this->appleTexture.loadFromFile("sprites/apple.png"))
 	{
 		std::cerr << "\nTexture loading failed. Exiting program!\n" << std::endl;
 		exit (1);
@@ -34,6 +36,7 @@ void	Map::readMapInfo(std::string filename)
 	std::string		tempStr = "";
 	std::string		mapStr = "";
 	int				rowLen = 0;
+	int				mapHeightCounter = 0;
 
 	if (!inputFile.is_open())
 	{
@@ -55,6 +58,7 @@ void	Map::readMapInfo(std::string filename)
 			<< "Exiting program.\n" << RESET << std::endl;
 			exit (1);
 		}
+		mapHeightCounter++;
 	}
 
 	if (mapStr.empty())
@@ -71,7 +75,11 @@ void	Map::readMapInfo(std::string filename)
 		exit (1);
 	}
 
+	this->mapWidth = rowLen;
+	this->mapHeight = mapHeightCounter;
+
 	setTileVec(mapStr, rowLen);
+	setSnakeStartPos();
 
 }
 
@@ -94,12 +102,20 @@ int		Map::checkValidMap(std::string mapStr, int rowLen)
 
 void	Map::setTileVec(std::string mapStr, int rowLen)
 {
-	int		k = 0;
-	mapTile tile = {'0'};
+	int			k = 0;
+	mapTile		tile;
+	std::string	ValidMapCharacters = VALID_MAP_CHAR;
 	std::vector<mapTile> tempVec;
 
 	for (int i = 0; i < mapStr.length(); i++)
 	{
+		if (ValidMapCharacters.find_first_of(mapStr[i]) == ValidMapCharacters.npos)
+		{
+			std::cerr << RED << "\nMap-file error: map has invalid character(s).\n"
+			<< "Exiting program.\n" << RESET << std::endl;
+			exit (1);
+		}
+
 		tile.type = mapStr[i];
 		tempVec.push_back(tile);
 
@@ -123,15 +139,17 @@ void	Map::drawMap(sf::RenderWindow &window)
 		for (int x = 0; x < tileVec[y].size(); x++)
 		{	
 			if (tileVec[y][x].type == '1')
-			{
 				tileVec[y][x].sprite.setTexture(this->wallTexture);
-				tileVec[y][x].sprite.setPosition(x * TILE_SIZE, y * TILE_SIZE);
-				window.draw(tileVec[y][x].sprite);
-			}
-			else if (tileVec[y][x].type == '0')
-			{
+			else if (tileVec[y][x].type == '0' || tileVec[y][x].type == 'C' \
+			|| tileVec[y][x].type == 'S')
 				tileVec[y][x].sprite.setTexture(this->grassTexture);
-				tileVec[y][x].sprite.setPosition(x * TILE_SIZE, y * TILE_SIZE);
+			
+			tileVec[y][x].sprite.setPosition(x * TILE_SIZE, y * TILE_SIZE);
+			window.draw(tileVec[y][x].sprite);
+
+			if (tileVec[y][x].type == 'C')
+			{
+				tileVec[y][x].sprite.setTexture(this->appleTexture);
 				window.draw(tileVec[y][x].sprite);
 			}
 		}
@@ -143,19 +161,40 @@ void	Map::drawMap(sf::RenderWindow &window)
 // Collision detection
 
 
-int		Map::checkWallCollisions(sf::Sprite &snakeSprite)
+int		Map::checkCollisions(Snake &snake)
 {
-	for (int y = 0; y < tileVec.size(); y++)
+
+	sf::Vector2i snakeTileCoord;
+	sf::Vector2f snakeWorldCoord;
+	sf::Sprite snakeSprite = snake.getSnakeSprite();
+
+	snakeWorldCoord = snake.getSnakeWorldCoord();
+	snakeTileCoord.x = snakeWorldCoord.x / TILE_SIZE;
+	snakeTileCoord.y = snakeWorldCoord.y / TILE_SIZE;
+
+	for (int y = snakeTileCoord.y - 1; y < snakeTileCoord.y + 2; y++)
 	{
-		for (int x = 0; x < tileVec[y].size(); x++)
+		for (int x = snakeTileCoord.x - 1; x < snakeTileCoord.x + 2; x++)
 		{	
-			if (tileVec[y][x].type == '1')
+			if (x >= 0 && x < this->mapWidth && y >= 0 && y < this->mapHeight)
 			{
-				if (tileVec[y][x].sprite.getGlobalBounds().intersects(snakeSprite.getGlobalBounds()))
-					return (1);
+				if (tileVec[y][x].type == '1')
+				{
+					if (tileVec[y][x].sprite.getGlobalBounds().intersects(snakeSprite.getGlobalBounds()))
+						return (1);
+				}
+				else if (tileVec[y][x].type == 'C')
+				{
+					if (tileVec[y][x].sprite.getGlobalBounds().intersects(snakeSprite.getGlobalBounds()))
+					{
+						tileVec[y][x].type = '0';
+						return (2);
+					}
+				}
 			}
 		}
 	}
+
 
 	return (0);
 }
@@ -169,45 +208,24 @@ char	Map::getTileType(int x, int y)
 	return (tileVec[y][x].type);
 }
 
-
-
-
-/* OLD VERSION
-
-void	Map::initMap()
+sf::Vector2i &Map::getSnakeStartPos()
 {
-	if (!wallTexture.loadFromFile("sprites/wall.png") || !grassTexture.loadFromFile("sprites/grass.png"))
-	{
-		std::cerr << "Texture loading failed. Exiting program!" << std::endl;
-		exit (1);
-	};
+	return (this->snakeStartPos);
+}
 
-	for (int y = 0; y < WINDOW_HEIGHT; y += TILE_SIZE)
+
+void	Map::setSnakeStartPos()
+{
+	for (int y = 0; y < tileVec.size(); y++)
 	{
-		if (y == 0 || y == WINDOW_HEIGHT - TILE_SIZE)
+		for (int x = 0; x < tileVec[y].size(); x++)
 		{
-			for (int x = 0; x < WINDOW_WIDTH; x += TILE_SIZE)
+			if (tileVec[y][x].type == 'S')
 			{
-				tileArr[x / TILE_SIZE][y / TILE_SIZE].setTexture(wallTexture);
-				tileArr[x / TILE_SIZE][y / TILE_SIZE].setPosition(x, y);
-			}
-		}
-		else
-		{
-			for (int x = 0; x < WINDOW_WIDTH; x += TILE_SIZE)
-			{
-				if (x == 0 || x == WINDOW_WIDTH - TILE_SIZE)
-				{
-					tileArr[x / TILE_SIZE][y / TILE_SIZE].setTexture(wallTexture);
-					tileArr[x / TILE_SIZE][y / TILE_SIZE].setPosition(x, y);
-				}
-				else
-				{
-					tileArr[x / TILE_SIZE][y / TILE_SIZE].setTexture(grassTexture);
-					tileArr[x / TILE_SIZE][y / TILE_SIZE].setPosition(x, y);
-				}
+				this->snakeStartPos.x = x;
+				this->snakeStartPos.y = y;
 			}
 		}
 	}
 }
-*/
+

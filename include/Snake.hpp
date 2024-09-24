@@ -17,7 +17,6 @@ class Snake
 	sf::Sprite	snakeHeadSprite;
 	sf::Clock	snakeClock;
 
-
 	sf::Texture				bodyTexture;
 	std::vector<SnakeBody>	bodyVec;
 	int						bodyCount;
@@ -26,20 +25,20 @@ class Snake
 	int			newDirection;
 	int			moveSpeed;
 
-//	int			coordX; // coord in the middle of snake head
-//	int			coordY; // coord in the middle of snake head
+	sf::Vector2f	snakeWorldCoord; // in pixels!
 
 	public:
 
 	Snake();
 	~Snake() {};
 
-	void	Init(sf::RenderWindow &window);
+	void	Init(sf::RenderWindow &window, sf::Vector2i startPos);
 	void	drawSnake(sf::RenderWindow &window);
 	void	moveSnake();
 	void	changeDirection(sf::Event &keypress);
 
-	sf::Sprite &getSnakeSprite();
+	sf::Sprite		&getSnakeSprite();
+	sf::Vector2f	getSnakeWorldCoord();
 };
 
 #endif

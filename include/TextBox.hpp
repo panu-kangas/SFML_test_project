@@ -2,7 +2,6 @@
 # define TEXTBOX_HPP
 
 # include <iostream>
-// # include <vector>
 # include <SFML/Graphics.hpp>
 
 # include "Constants.hpp"

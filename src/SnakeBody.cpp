@@ -14,14 +14,15 @@ SnakeBody::SnakeBody()
 
 // Functionalities
 
-void	SnakeBody::InitBody(sf::RenderWindow &window, sf::Texture &bodyText, int num)
+void	SnakeBody::InitBody(sf::RenderWindow &window, sf::Texture &bodyText, sf::Vector2i startPos, int num)
 {
 	sf::Vector2u windowSize = window.getSize();
 
 	this->bodySprite.setTexture(bodyText);
-	this->bodySprite.setPosition(windowSize.x / 2, (windowSize.y / 2) + (TILE_SIZE * (num + 1))); // need to change this
+	this->bodySprite.setPosition(startPos.x * TILE_SIZE, startPos.y * TILE_SIZE);
 
 	this->bodyNum = num;
+	this->moveStartCounter = ((num + 1) * TILE_SIZE) / this->moveSpeed; // Check this formula later
 }
 
 void	SnakeBody::drawSnakeBody(sf::RenderWindow &window)
@@ -65,7 +66,10 @@ void	SnakeBody::moveSnakeBody()
 			x = 0;
 	}
 
-	this->bodySprite.move(x * moveSpeed, y * moveSpeed);
+	if (this->moveStartCounter > 0)
+		this->moveStartCounter--;
+	else
+		this->bodySprite.move(x * moveSpeed, y * moveSpeed);
 
 }
 

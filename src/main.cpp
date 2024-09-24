@@ -2,7 +2,7 @@
 #include "Map.hpp"
 #include "ScoreCounter.hpp"
 
-
+/*
 sf::Vector2f makeVector2f(float x, float y)
 {
 	sf::Vector2f temp;
@@ -12,6 +12,7 @@ sf::Vector2f makeVector2f(float x, float y)
 
 	return (temp);
 }
+*/
 
 
 int main(int argc, char *argv[])
@@ -28,16 +29,17 @@ int main(int argc, char *argv[])
     window.setFramerateLimit(144); // check this later
 
 	int	state = 0; // JUST A TEST
+	int collisionFlag;
 
 	Map		map;
 	map.initMap(argv[1]);
 
 	Snake	snake;
-	snake.Init(window);
+	snake.Init(window, map.getSnakeStartPos());
 
 	ScoreCounter score;
 	score.initTextBox("fonts/pixel_font.ttf", 28);
-	score.setBackground(makeVector2f(112, 32), makeVector2f(0, 0), sf::Color::Black);
+	score.setBackground(sf::Vector2f(112, 32), sf::Vector2f(0, 0), sf::Color::Black);
 
 
 
@@ -59,12 +61,12 @@ int main(int argc, char *argv[])
 			else if (event.type == sf::Event::KeyPressed)
 			{
 				snake.changeDirection(event);
-				score.addScore(100); // TEST
 
 				if (event.key.scancode == sf::Keyboard::Scan::Escape)
 					window.close(); // should I break ; here...?
 			}
         }
+
 
         window.clear();
 		
@@ -73,10 +75,15 @@ int main(int argc, char *argv[])
 		snake.moveSnake();
 		snake.drawSnake(window);
 
-		score.setText(score.getScoreString(), makeVector2f(10, 0), sf::Color::Green);
+		score.setText(score.getScoreString(), sf::Vector2f(10, 0), sf::Color::Green);
 		score.drawText(window);
 
-		state = map.checkWallCollisions(snake.getSnakeSprite());		
+		collisionFlag = map.checkCollisions(snake);
+
+		if (collisionFlag == 1)
+			state = 1;
+		else if (collisionFlag == 2)
+			score.addScore(100);
 
         window.display();
     }

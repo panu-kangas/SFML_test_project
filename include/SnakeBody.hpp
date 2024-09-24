@@ -17,6 +17,7 @@ class SnakeBody
 	int			bodyNum;
 	int			curDirection; // 0 up, 1 right, 2 down, 3 left
 	int			moveSpeed;
+	int			moveStartCounter;
 
 	std::vector<int> 			newDirVec;
 	std::vector<sf::Vector2f>	turnPointVec;
@@ -27,7 +28,7 @@ class SnakeBody
 	SnakeBody();
 	~SnakeBody() {};
 
-	void	InitBody(sf::RenderWindow &window, sf::Texture &bodyText, int num);
+	void	InitBody(sf::RenderWindow &window, sf::Texture &bodyText, sf::Vector2i startPos, int num);
 	void	drawSnakeBody(sf::RenderWindow &window);
 	void	moveSnakeBody();
 

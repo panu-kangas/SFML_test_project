@@ -68,39 +68,57 @@ void	Map::readMapInfo(std::string filename)
 		exit (1);
 	}
 
-	if (checkValidMap(mapStr, rowLen) == 1)
-	{
-		std::cerr << RED << "\nMap-file error: map not surrounded with walls.\n"
-		<< "Exiting program.\n" << RESET << std::endl;
-		exit (1);
-	}
+	checkValidMap(mapStr, rowLen);
+
 
 	this->mapWidth = rowLen;
 	this->mapHeight = mapHeightCounter;
 
-	setTileVec(mapStr, rowLen);
+	setWholeMapVec(mapStr, rowLen);
 	setSnakeStartPos();
 
 }
 
-int		Map::checkValidMap(std::string mapStr, int rowLen)
+void	Map::checkValidMap(std::string mapStr, int rowLen)
 {
+	bool	snakeFound = false;
+
 	for (int i = 0; i < mapStr.length(); i++)
 	{
 		if ((i < rowLen || i >= mapStr.length() - rowLen) && mapStr[i] != '1')
-			return (1);
+		{
+			std::cerr << RED << "\nMap-file error: map not surrounded with walls.\n"
+			<< "Exiting program.\n" << RESET << std::endl;
+			exit (1);
+		}
 		else if ((i % rowLen == 0 || i % rowLen == rowLen - 1) && mapStr[i] != '1')
-			return (1);
-	}
+		{
+			std::cerr << RED << "\nMap-file error: map not surrounded with walls.\n"
+			<< "Exiting program.\n" << RESET << std::endl;
+			exit (1);
+		}
 
-	return (0);
+		if (mapStr[i] == 'S')
+		{
+			if (snakeFound == false)
+				snakeFound = true;
+			else
+			{
+				std::cerr << RED << "\nMap-file error: map has multiple snakes ('S').\n"
+				<< "Exiting program.\n" << RESET << std::endl;
+				exit (1);
+			}
+		}
+		
+
+	}
 
 	// I might need some extra checks here...? 
 	// Example: player is totally blocked by walls etc
 }
 
 
-void	Map::setTileVec(std::string mapStr, int rowLen)
+void	Map::setWholeMapVec(std::string mapStr, int rowLen)
 {
 	int			k = 0;
 	mapTile		tile;
@@ -117,12 +135,18 @@ void	Map::setTileVec(std::string mapStr, int rowLen)
 		}
 
 		tile.type = mapStr[i];
+
+		if (tile.type == '1')
+			tile.sprite.setTexture(this->wallTexture);
+		else if (tile.type == '0' || tile.type == 'C' || tile.type == 'S')
+			tile.sprite.setTexture(this->grassTexture);
+
 		tempVec.push_back(tile);
 
 		k++;
 		if (k == rowLen)
 		{
-			tileVec.push_back(tempVec);
+			wholeMapVec.push_back(tempVec);
 			tempVec.clear();
 			k = 0;
 		}
@@ -132,30 +156,109 @@ void	Map::setTileVec(std::string mapStr, int rowLen)
 
 // Drawing
 
-void	Map::drawMap(sf::RenderWindow &window)
+void	Map::drawMap(sf::RenderWindow &window, Snake &snake)
 {
-	for (int y = 0; y < tileVec.size(); y++)
-	{
-		for (int x = 0; x < tileVec[y].size(); x++)
-		{	
-			if (tileVec[y][x].type == '1')
-				tileVec[y][x].sprite.setTexture(this->wallTexture);
-			else if (tileVec[y][x].type == '0' || tileVec[y][x].type == 'C' \
-			|| tileVec[y][x].type == 'S')
-				tileVec[y][x].sprite.setTexture(this->grassTexture);
-			
-			tileVec[y][x].sprite.setPosition(x * TILE_SIZE, y * TILE_SIZE);
-			window.draw(tileVec[y][x].sprite);
 
-			if (tileVec[y][x].type == 'C')
+	sf::Vector2f snakePos = snake.getSnakeWorldCoord(); 
+
+	this->setXLimits(snakePos);
+	this->setYLimits(snakePos);
+
+
+	int	windowX;
+	if (this->sideWallOnScreen == true)
+		windowX = 0;
+	else
+		windowX = ((int)snakePos.x % TILE_SIZE) * -1;
+
+	int	windowXStart = windowX;
+
+
+	int windowY;
+	if (this->topBottomWallOnScreen == true)
+		windowY = 0;
+	else
+		windowY = ((int)snakePos.y % TILE_SIZE) * -1;
+
+
+	for (int y = this->yDrawLimits[0] / TILE_SIZE; y < this->yDrawLimits[1] / TILE_SIZE; y++)
+	{
+		windowX = windowXStart;
+		for (int x = this->xDrawLimits[0] / TILE_SIZE; x < this->xDrawLimits[1] / TILE_SIZE; x++)
+		{	
+			wholeMapVec[y][x].sprite.setPosition(windowX, windowY);
+			window.draw(wholeMapVec[y][x].sprite);
+
+			if (wholeMapVec[y][x].type == 'C')
 			{
-				tileVec[y][x].sprite.setTexture(this->appleTexture);
-				window.draw(tileVec[y][x].sprite);
+				wholeMapVec[y][x].sprite.setTexture(this->appleTexture);
+				window.draw(wholeMapVec[y][x].sprite);
+				wholeMapVec[y][x].sprite.setTexture(this->grassTexture);
 			}
+
+			windowX += TILE_SIZE;
 		}
+		windowY += TILE_SIZE;
 	}
 	
 }
+
+void	Map::setXLimits(sf::Vector2f snakePos)
+{
+	// Should these be universal and counted base on window size...?
+	// Now, if window size changes, the drawing doesn't work!
+
+	this->sideWallOnScreen = false;
+	this->xDrawLimits[0] = (snakePos.x) - (16 * TILE_SIZE);
+	this->xDrawLimits[1] = (snakePos.x) + (16 * TILE_SIZE) + TILE_SIZE;
+
+	if (this->xDrawLimits[0] <= 0)
+	{
+		this->xDrawLimits[0] = 0;
+		this->xDrawLimits[1] = WINDOW_WIDTH;
+		this->sideWallOnScreen = true;
+		return ;
+	}
+	else if (this->xDrawLimits[1] >= this->mapWidth * TILE_SIZE)
+	{
+		this->xDrawLimits[0] = (this->mapWidth * TILE_SIZE) - (WINDOW_WIDTH);
+		this->xDrawLimits[1] = this->mapWidth * TILE_SIZE;
+		this->sideWallOnScreen = true;
+	}
+
+	if (this->xDrawLimits[0] % TILE_SIZE != 0)
+		this->xDrawLimits[1] += TILE_SIZE - (this->xDrawLimits[0] % TILE_SIZE);
+
+}
+
+void	Map::setYLimits(sf::Vector2f snakePos)
+{
+	// Should these be universal and counted base on window size...?
+	// Now, if window size changes, the drawing doesn't work!
+
+	this->topBottomWallOnScreen = false;
+	this->yDrawLimits[0] = (snakePos.y) - (11 * TILE_SIZE);
+	this->yDrawLimits[1] = (snakePos.y) + (11 * TILE_SIZE) + TILE_SIZE;
+
+	if (this->yDrawLimits[0] <= 0)
+	{
+		this->yDrawLimits[0] = 0;
+		this->yDrawLimits[1] = WINDOW_HEIGHT;
+		this->topBottomWallOnScreen = true;
+		return ;
+	}
+	else if (this->yDrawLimits[1] >= this->mapHeight * TILE_SIZE)
+	{
+		this->yDrawLimits[0] = (this->mapHeight * TILE_SIZE) - WINDOW_HEIGHT;
+		this->yDrawLimits[1] = this->mapHeight * TILE_SIZE;
+		this->topBottomWallOnScreen = true;
+	}
+
+	if (this->yDrawLimits[0] % TILE_SIZE != 0)
+		this->yDrawLimits[1] += TILE_SIZE - (this->yDrawLimits[0] % TILE_SIZE);
+
+}
+
 
 
 // Collision detection
@@ -178,16 +281,16 @@ int		Map::checkCollisions(Snake &snake)
 		{	
 			if (x >= 0 && x < this->mapWidth && y >= 0 && y < this->mapHeight)
 			{
-				if (tileVec[y][x].type == '1')
+				if (wholeMapVec[y][x].type == '1')
 				{
-					if (tileVec[y][x].sprite.getGlobalBounds().intersects(snakeSprite.getGlobalBounds()))
+					if (wholeMapVec[y][x].sprite.getGlobalBounds().intersects(snakeSprite.getGlobalBounds()))
 						return (1);
 				}
-				else if (tileVec[y][x].type == 'C')
+				else if (wholeMapVec[y][x].type == 'C')
 				{
-					if (tileVec[y][x].sprite.getGlobalBounds().intersects(snakeSprite.getGlobalBounds()))
+					if (wholeMapVec[y][x].sprite.getGlobalBounds().intersects(snakeSprite.getGlobalBounds()))
 					{
-						tileVec[y][x].type = '0';
+						wholeMapVec[y][x].type = '0';
 						return (2);
 					}
 				}
@@ -205,7 +308,7 @@ int		Map::checkCollisions(Snake &snake)
 
 char	Map::getTileType(int x, int y)
 {
-	return (tileVec[y][x].type);
+	return (wholeMapVec[y][x].type);
 }
 
 sf::Vector2i &Map::getSnakeStartPos()
@@ -213,14 +316,24 @@ sf::Vector2i &Map::getSnakeStartPos()
 	return (this->snakeStartPos);
 }
 
+int		Map::getMapWidth()
+{
+	return (this->mapWidth);
+}
+
+int		Map::getMapHeight()
+{
+	return (this->mapHeight);
+}
+
 
 void	Map::setSnakeStartPos()
 {
-	for (int y = 0; y < tileVec.size(); y++)
+	for (int y = 0; y < wholeMapVec.size(); y++)
 	{
-		for (int x = 0; x < tileVec[y].size(); x++)
+		for (int x = 0; x < wholeMapVec[y].size(); x++)
 		{
-			if (tileVec[y][x].type == 'S')
+			if (wholeMapVec[y][x].type == 'S')
 			{
 				this->snakeStartPos.x = x;
 				this->snakeStartPos.y = y;

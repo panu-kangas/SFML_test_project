@@ -35,12 +35,20 @@ class Map
 
 	sf::Vector2i snakeStartPos;
 
-	std::vector<std::vector<mapTile>>	tileVec; // Optimization: make this an array (use new)
+	std::vector<std::vector<mapTile>>	wholeMapVec; // Optimization: make this an array (use new)
+
+	int		xDrawLimits[2];
+	int		yDrawLimits[2];
+	bool	sideWallOnScreen;
+	bool	topBottomWallOnScreen;
 
 	void	readMapInfo(std::string filename);
-	int		checkValidMap(std::string mapStr, int rowLen); // might need extra checks...?
-	void	setTileVec(std::string mapStr, int rowLen);
+	void	checkValidMap(std::string mapStr, int rowLen); // might need extra checks...?
+	void	setWholeMapVec(std::string mapStr, int rowLen);
 	void	setSnakeStartPos();
+
+	void	setXLimits(sf::Vector2f snakePos);
+	void	setYLimits(sf::Vector2f snakePos);
 
 	public:
 
@@ -48,12 +56,14 @@ class Map
 	~Map();
 
 	void	initMap(std::string filename);
-	void	drawMap(sf::RenderWindow &window);
+	void	drawMap(sf::RenderWindow &window, Snake &snake);
 
 	int		checkCollisions(Snake &snake);
 
 	char	getTileType(int x, int y);
 	sf::Vector2i &getSnakeStartPos();
+	int		getMapWidth();
+	int		getMapHeight();
 
 };
 

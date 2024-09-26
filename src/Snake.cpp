@@ -8,6 +8,7 @@ Snake::Snake()
 	this->newDirection = 0;
 	this->moveSpeed = 4;
 	this->bodyCount = 3;
+	this->startMoving = false;
 
 }
 
@@ -15,7 +16,7 @@ Snake::Snake()
 // Functionalities
 
 
-void	Snake::Init(sf::RenderWindow &window, sf::Vector2i startPos)
+void	Snake::Init(sf::RenderWindow &window, sf::Vector2i startPos, int mapWidth, int mapHeight)
 {
 	if (!this->snakeHeadTexture.loadFromFile("sprites/snake_head.png") \
 	|| !this->bodyTexture.loadFromFile("sprites/snake_body.png"))
@@ -26,11 +27,10 @@ void	Snake::Init(sf::RenderWindow &window, sf::Vector2i startPos)
 
 	this->snakeHeadSprite.setTexture(snakeHeadTexture);
 
-	this->snakeHeadSprite.setPosition(startPos.x * TILE_SIZE, startPos.y * TILE_SIZE);
-
 	this->snakeWorldCoord.x = startPos.x * TILE_SIZE;
 	this->snakeWorldCoord.y = startPos.y * TILE_SIZE;
 
+	this->setSpritePosition(mapWidth, mapHeight);
 
 	SnakeBody tempBody;
 
@@ -48,6 +48,7 @@ void	Snake::drawSnake(sf::RenderWindow &window)
 {
 	for (int i = 0; i < this->bodyCount; i++)
 		this->bodyVec[i].drawSnakeBody(window);
+
 	window.draw(snakeHeadSprite);
 
 }
@@ -72,30 +73,36 @@ void	Snake::changeDirection(sf::Event &keypress)
 			return ;
 	}
 
-	int	check_dir;
+	if (this->startMoving == true)
+	{
+		int	check_dir;
 
-	check_dir = this->newDirection - 2;
-	if (check_dir < 0)
-		check_dir = 4 + check_dir;
+		check_dir = this->newDirection - 2;
+		if (check_dir < 0)
+			check_dir = 4 + check_dir;
 
-	if (this->curDirection == check_dir)
-		this->newDirection = this->curDirection;
+		if (this->curDirection == check_dir)
+			this->newDirection = this->curDirection;
+	}
+	else
+		this->startMoving = true;
 
 }
 
-void	Snake::moveSnake()
+void	Snake::moveSnake(int mapWidth, int mapHeight)
 {
 	int 	x = 0;
 	int		y = 0;
 
-	if (snakeClock.getElapsedTime().asMilliseconds() < 25)
+	if (this->snakeClock.getElapsedTime().asMilliseconds() < 20 || this->startMoving == false)
 		return ;
 
 	if (this->curDirection != this->newDirection)
 	{
 		this->curDirection = this->newDirection;
 		for (int i = 0; i < this->bodyCount; i++)
-			this->bodyVec[i].addTurn(this->newDirection, this->snakeHeadSprite.getPosition());
+			this->bodyVec[i].addTurn\
+			(this->newDirection, sf::Vector2f(this->snakeWorldCoord.x, this->snakeWorldCoord.y));
 	}
 
 	switch (this->curDirection)
@@ -116,17 +123,45 @@ void	Snake::moveSnake()
 			x = 0;
 	}
 
-	this->snakeHeadSprite.move(x * moveSpeed, y * moveSpeed);
+/*
+OLD VERSION
+
+	if (((this->curDirection == 0 || this->curDirection == 2) && topBottomWallOnScreen == true) \
+	|| ((this->curDirection == 1 || this->curDirection == 3) && sideWallOnScreen == true))
+	{
+		this->snakeHeadSprite.move(x * moveSpeed, y * moveSpeed);
+	}
+*/
 
 	this->snakeWorldCoord.x += x * moveSpeed;
 	this->snakeWorldCoord.y += y * moveSpeed;
 
+	this->setSpritePosition(mapWidth, mapHeight);
+
 
 	for (int i = 0; i < this->bodyCount; i++)
-		this->bodyVec[i].moveSnakeBody();
+		this->bodyVec[i].moveSnakeBody(mapWidth, mapHeight, this->snakeWorldCoord);
 
 	this->snakeClock.restart();
 
+}
+
+void	Snake::setSpritePosition(int mapWidth, int mapHeight)
+{
+	int drawCoordX = this->snakeWorldCoord.x - (snakeWorldCoord.x - (16 * TILE_SIZE));
+	int drawCoordY = this->snakeWorldCoord.y - (snakeWorldCoord.y - (11 * TILE_SIZE));
+
+	if (snakeWorldCoord.x - (16 * TILE_SIZE) < 0)
+		drawCoordX += snakeWorldCoord.x - (16 * TILE_SIZE);
+	else if (snakeWorldCoord.x + (17 * TILE_SIZE) > (mapWidth * TILE_SIZE))
+		drawCoordX += (snakeWorldCoord.x + (17 * TILE_SIZE)) - (mapWidth * TILE_SIZE);
+
+	if (snakeWorldCoord.y - (11 * TILE_SIZE) < 0)
+		drawCoordY += snakeWorldCoord.y - (11 * TILE_SIZE);
+	else if (snakeWorldCoord.y + (12 * TILE_SIZE) > (mapHeight * TILE_SIZE))
+		drawCoordY += (snakeWorldCoord.y + (12 * TILE_SIZE)) - (mapHeight * TILE_SIZE);
+
+	this->snakeHeadSprite.setPosition(drawCoordX, drawCoordY);
 }
 
 // Utils
@@ -140,5 +175,11 @@ sf::Vector2f Snake::getSnakeWorldCoord()
 {
 	return (this->snakeWorldCoord);
 }
+
+bool	Snake::getStartMovingStatus()
+{
+	return (this->startMoving);
+}
+
 
 

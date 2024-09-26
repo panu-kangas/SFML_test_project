@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_HPP
 # define CONSTANTS_HPP
 
-# define WINDOW_WIDTH	1024
+# define WINDOW_WIDTH	1056
 # define WINDOW_HEIGHT	736
 # define TILE_SIZE		32
 

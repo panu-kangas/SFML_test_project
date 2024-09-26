@@ -19,6 +19,8 @@ class SnakeBody
 	int			moveSpeed;
 	int			moveStartCounter;
 
+	sf::Vector2f	bodyWorldCoord; // in pixels!
+
 	std::vector<int> 			newDirVec;
 	std::vector<sf::Vector2f>	turnPointVec;
 
@@ -30,7 +32,7 @@ class SnakeBody
 
 	void	InitBody(sf::RenderWindow &window, sf::Texture &bodyText, sf::Vector2i startPos, int num);
 	void	drawSnakeBody(sf::RenderWindow &window);
-	void	moveSnakeBody();
+	void	moveSnakeBody(int mapWidth, int mapHeight, sf::Vector2f snakeHeadPos);
 
 	void	addTurn(int direction, sf::Vector2f turnPoint);
 	void	setNextBody(SnakeBody *next);

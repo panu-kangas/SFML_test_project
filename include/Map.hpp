@@ -8,6 +8,7 @@
 
 # include "Constants.hpp"
 # include "Snake.hpp"
+# include "Tower.hpp"
 
 //////////
 
@@ -32,13 +33,16 @@ class Map
 	sf::Texture	wallTexture;
 	sf::Texture	grassTexture;
 	sf::Texture	appleTexture;
+	sf::Texture	towerTexture;
+	sf::Texture towerWeaponText;
 
 	sf::Vector2i snakeStartPos;
 
 	std::vector<std::vector<mapTile>>	wholeMapVec; // Optimization: make this an array (use new)
+	std::vector<Tower>					towerVec;
 
-	int		xDrawLimits[2];
-	int		yDrawLimits[2];
+	int		xDrawLimits[2]; // in pixels!
+	int		yDrawLimits[2]; // in pixels!
 	bool	sideWallOnScreen;
 	bool	topBottomWallOnScreen;
 
@@ -50,6 +54,10 @@ class Map
 	void	setXLimits(sf::Vector2f snakePos);
 	void	setYLimits(sf::Vector2f snakePos);
 
+	void	drawTowers(sf::RenderWindow &window, sf::Vector2f snakePos);
+	int		checkTowerCollision(Snake &snake, sf::Vector2i snakeTileCoord);
+
+
 	public:
 
 	Map();
@@ -58,12 +66,15 @@ class Map
 	void	initMap(std::string filename);
 	void	drawMap(sf::RenderWindow &window, Snake &snake);
 
+
 	int		checkCollisions(Snake &snake);
 
-	char	getTileType(int x, int y);
-	sf::Vector2i &getSnakeStartPos();
+//	char	getTileType(int x, int y);
 	int		getMapWidth();
 	int		getMapHeight();
+
+	sf::Vector2i &getSnakeStartPos();
+	void		setTowerVec();
 
 };
 

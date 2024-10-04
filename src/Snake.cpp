@@ -6,7 +6,7 @@ Snake::Snake()
 {
 	this->curDirection = 0;
 	this->newDirection = 0;
-	this->moveSpeed = 4;
+	this->moveSpeed = MOVE_SPEED;
 	this->bodyCount = 3;
 	this->startMoving = false;
 

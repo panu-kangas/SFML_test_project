@@ -19,7 +19,9 @@ void	Map::initMap(std::string filename)
 {
 	if (!this->wallTexture.loadFromFile("sprites/wall.png") \
 	|| !this->grassTexture.loadFromFile("sprites/grass.png") \
-	|| !this->appleTexture.loadFromFile("sprites/apple.png"))
+	|| !this->appleTexture.loadFromFile("sprites/apple.png") \
+	|| !this->towerTexture.loadFromFile("sprites/tower_base.png") \
+	|| !this->towerWeaponText.loadFromFile("sprites/tower_weapon.png"))
 	{
 		std::cerr << "\nTexture loading failed. Exiting program!\n" << std::endl;
 		exit (1);
@@ -74,8 +76,9 @@ void	Map::readMapInfo(std::string filename)
 	this->mapWidth = rowLen;
 	this->mapHeight = mapHeightCounter;
 
-	setWholeMapVec(mapStr, rowLen);
-	setSnakeStartPos();
+	this->setWholeMapVec(mapStr, rowLen);
+	this->setSnakeStartPos(); // combine with setTowerVec
+	this->setTowerVec();
 
 }
 
@@ -138,7 +141,7 @@ void	Map::setWholeMapVec(std::string mapStr, int rowLen)
 
 		if (tile.type == '1')
 			tile.sprite.setTexture(this->wallTexture);
-		else if (tile.type == '0' || tile.type == 'C' || tile.type == 'S')
+		else if (tile.type == '0' || tile.type == 'C' || tile.type == 'S' || tile.type == 'T')
 			tile.sprite.setTexture(this->grassTexture);
 
 		tempVec.push_back(tile);
@@ -200,6 +203,8 @@ void	Map::drawMap(sf::RenderWindow &window, Snake &snake)
 		}
 		windowY += TILE_SIZE;
 	}
+
+	this->drawTowers(window, snakePos);
 	
 }
 
@@ -266,7 +271,6 @@ void	Map::setYLimits(sf::Vector2f snakePos)
 
 int		Map::checkCollisions(Snake &snake)
 {
-
 	sf::Vector2i snakeTileCoord;
 	sf::Vector2f snakeWorldCoord;
 	sf::Sprite snakeSprite = snake.getSnakeSprite();
@@ -298,18 +302,35 @@ int		Map::checkCollisions(Snake &snake)
 		}
 	}
 
+	if (this->checkTowerCollision(snake, snakeTileCoord) == 1)
+		return (1);
 
 	return (0);
 }
 
 
+int		Map::checkTowerCollision(Snake &snake, sf::Vector2i snakeTileCoord)
+{
+	for (int i = 0; i < this->towerVec.size(); i++)
+	{
+		// should I initialize all towers to -10 in the beginning...?
+
+		if (this->towerVec[i].getSprite().getPosition().x != -10 \
+		&& this->towerVec[i].getSprite().getGlobalBounds().intersects(snake.getSnakeSprite().getGlobalBounds()))
+			return (1);
+	}
+
+	return (0);
+}
 
 // Utils
 
+/*
 char	Map::getTileType(int x, int y)
 {
 	return (wholeMapVec[y][x].type);
 }
+*/
 
 sf::Vector2i &Map::getSnakeStartPos()
 {
@@ -326,6 +347,7 @@ int		Map::getMapHeight()
 	return (this->mapHeight);
 }
 
+// COMBINE WITH setTowerVec !!!
 
 void	Map::setSnakeStartPos()
 {
@@ -341,4 +363,58 @@ void	Map::setSnakeStartPos()
 		}
 	}
 }
+
+
+// TOWER FUNCTIONS
+
+
+// COMBINE WITH setSnakeStartPos !!!
+
+void	Map::setTowerVec()
+{
+	for (int y = 0; y < wholeMapVec.size(); y++)
+	{
+		for (int x = 0; x < wholeMapVec[y].size(); x++)
+		{
+			if (wholeMapVec[y][x].type == 'T')
+				this->towerVec.push_back(Tower(this->towerTexture, this->towerWeaponText, sf::Vector2f(x, y)));
+		}
+	}
+
+}
+
+void	Map::drawTowers(sf::RenderWindow &window, sf::Vector2f snakePos)
+{
+	int 			drawX;
+	int 			drawY;
+	sf::Vector2f	towerCoord;
+
+	for (int i = 0; i < this->towerVec.size(); i++)
+	{
+		if (this->towerVec[i].isVisible(this->xDrawLimits, this->yDrawLimits) == true)
+		{
+			towerCoord = this->towerVec[i].getPosInPixels();
+
+			drawX =	towerCoord.x - this->xDrawLimits[0];
+			drawY = towerCoord.y - this->yDrawLimits[0];
+			this->towerVec[i].getSprite().setPosition(drawX, drawY);
+
+			this->towerVec[i].getWeaponSprite().setPosition(drawX + 32, drawY + 17); // universal...?
+			
+			if (this->towerVec[i].isSnakeVisible(snakePos) == false)
+				this->towerVec[i].setIdleAngle();
+			else
+				this->towerVec[i].setAttackAngle(snakePos);
+			this->towerVec[i].getWeaponSprite().setRotation(this->towerVec[i].getWeaponAngle());
+
+
+			this->towerVec[i].drawTower(window);
+		}
+		else
+			this->towerVec[i].getSprite().setPosition(-10, -10);
+
+	}
+}
+
+
 

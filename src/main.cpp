@@ -1,6 +1,7 @@
 #include "Snake.hpp"
 #include "Map.hpp"
 #include "ScoreCounter.hpp"
+#include "Tower.hpp"
 
 
 int main(int argc, char *argv[])
@@ -14,7 +15,7 @@ int main(int argc, char *argv[])
 	}
 
     auto window = sf::RenderWindow{ { WINDOW_WIDTH, WINDOW_HEIGHT }, "SFML test" };
-    window.setFramerateLimit(144); // check this later
+    window.setFramerateLimit(60); // check this later
 
 /*
 	Class creation & initialization start
@@ -40,15 +41,17 @@ int main(int argc, char *argv[])
 	snakeInfoPos.y -= 32;
 
 	snakeStartInfo.initTextBox("fonts/pixel_font.ttf", 18);
-	snakeStartInfo.setBackground(sf::Vector2f(230, 18), snakeInfoPos, sf::Color::Black);
+	snakeStartInfo.setBackground(sf::Vector2f(230, 18), snakeInfoPos, sf::Color::Black);	
 
 /*
 	Class creation & initialization end
 */
 
 
+
     while (window.isOpen())
     {
+
 		if (state == 1)
 		{
 			std::cout << "\033[31m" << "\nYOU LOSE!\n" << "\033[0m" << std::endl;

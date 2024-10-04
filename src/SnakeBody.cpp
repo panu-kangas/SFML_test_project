@@ -5,7 +5,7 @@
 SnakeBody::SnakeBody()
 {
 	this->curDirection = 0;
-	this->moveSpeed = 4;
+	this->moveSpeed = MOVE_SPEED;
 	this->nextBody = nullptr;
 
 	// std::cout << "SnakeBody got created" << std::endl;

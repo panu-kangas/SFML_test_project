@@ -21,7 +21,9 @@ void	Map::initMap(std::string filename)
 	|| !this->grassTexture.loadFromFile("sprites/grass.png") \
 	|| !this->appleTexture.loadFromFile("sprites/apple.png") \
 	|| !this->towerTexture.loadFromFile("sprites/tower_base.png") \
-	|| !this->towerWeaponText.loadFromFile("sprites/tower_weapon.png"))
+	|| !this->towerWeaponText[0].loadFromFile("sprites/tower_weapon.png") \
+	|| !this->towerWeaponText[1].loadFromFile("sprites/tower_weapon_1.png") \
+	|| !this->arrowTexture.loadFromFile("sprites/arrow.png"))
 	{
 		std::cerr << "\nTexture loading failed. Exiting program!\n" << std::endl;
 		exit (1);
@@ -377,7 +379,7 @@ void	Map::setTowerVec()
 		for (int x = 0; x < wholeMapVec[y].size(); x++)
 		{
 			if (wholeMapVec[y][x].type == 'T')
-				this->towerVec.push_back(Tower(this->towerTexture, this->towerWeaponText, sf::Vector2f(x, y)));
+				this->towerVec.push_back(Tower(this->towerTexture, this->towerWeaponText, &this->arrowTexture, sf::Vector2f(x, y)));
 		}
 	}
 
@@ -397,14 +399,25 @@ void	Map::drawTowers(sf::RenderWindow &window, sf::Vector2f snakePos)
 
 			drawX =	towerCoord.x - this->xDrawLimits[0];
 			drawY = towerCoord.y - this->yDrawLimits[0];
+
+			this->towerVec[i].shootArrow(snakePos);
+
+
 			this->towerVec[i].getSprite().setPosition(drawX, drawY);
 
-			this->towerVec[i].getWeaponSprite().setPosition(drawX + 32, drawY + 17); // universal...?
+			this->towerVec[i].getWeaponSprite().setPosition(drawX + 32, drawY + 17); // make universal...?
 			
 			if (this->towerVec[i].isSnakeVisible(snakePos) == false)
+			{
+				this->towerVec[i].setShootingFlag(false);
 				this->towerVec[i].setIdleAngle();
+			}
 			else
+			{
+				this->towerVec[i].setShootingFlag(true);
 				this->towerVec[i].setAttackAngle(snakePos);
+			}
+	
 			this->towerVec[i].getWeaponSprite().setRotation(this->towerVec[i].getWeaponAngle());
 
 

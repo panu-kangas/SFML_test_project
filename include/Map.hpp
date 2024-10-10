@@ -34,12 +34,13 @@ class Map
 	sf::Texture	grassTexture;
 	sf::Texture	appleTexture;
 	sf::Texture	towerTexture;
-	sf::Texture towerWeaponText;
+	sf::Texture towerWeaponText[2];
+	sf::Texture	arrowTexture;
 
 	sf::Vector2i snakeStartPos;
 
-	std::vector<std::vector<mapTile>>	wholeMapVec; // Optimization: make this an array (use new)
-	std::vector<Tower>					towerVec;
+	std::vector<std::vector<mapTile>>	wholeMapVec;
+	std::vector<Tower>					towerVec; // --> MOVE THIS TO GAMEHANDLER
 
 	int		xDrawLimits[2]; // in pixels!
 	int		yDrawLimits[2]; // in pixels!
@@ -47,14 +48,14 @@ class Map
 	bool	topBottomWallOnScreen;
 
 	void	readMapInfo(std::string filename);
-	void	checkValidMap(std::string mapStr, int rowLen); // might need extra checks...?
+	void	checkValidMap(std::string mapStr, int rowLen); // Needs extra checks!!
 	void	setWholeMapVec(std::string mapStr, int rowLen);
 	void	setSnakeStartPos();
 
 	void	setXLimits(sf::Vector2f snakePos);
 	void	setYLimits(sf::Vector2f snakePos);
 
-	void	drawTowers(sf::RenderWindow &window, sf::Vector2f snakePos);
+	void	drawTowers(sf::RenderWindow &window, sf::Vector2f snakePos); // --> Move to GameHandler
 	int		checkTowerCollision(Snake &snake, sf::Vector2i snakeTileCoord);
 
 
@@ -69,7 +70,6 @@ class Map
 
 	int		checkCollisions(Snake &snake);
 
-//	char	getTileType(int x, int y);
 	int		getMapWidth();
 	int		getMapHeight();
 

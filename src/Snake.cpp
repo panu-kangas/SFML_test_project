@@ -16,7 +16,7 @@ Snake::Snake()
 // Functionalities
 
 
-void	Snake::Init(sf::RenderWindow &window, sf::Vector2i startPos, int mapWidth, int mapHeight)
+void	Snake::initSnake(sf::RenderWindow &window, sf::Vector2i startPos, int mapWidth, int mapHeight)
 {
 	if (!this->snakeHeadTexture.loadFromFile("sprites/snake_head.png") \
 	|| !this->bodyTexture.loadFromFile("sprites/snake_body.png"))

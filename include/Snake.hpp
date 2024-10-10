@@ -36,7 +36,7 @@ class Snake
 	Snake();
 	~Snake() {};
 
-	void	Init(sf::RenderWindow &window, sf::Vector2i startPos, int mapWidth, int mapHeight);
+	void	initSnake(sf::RenderWindow &window, sf::Vector2i startPos, int mapWidth, int mapHeight);
 	void	drawSnake(sf::RenderWindow &window);
 	void	moveSnake(int mapWidth, int mapHeight);
 	void	changeDirection(sf::Event &keypress);

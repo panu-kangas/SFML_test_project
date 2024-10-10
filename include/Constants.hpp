@@ -10,6 +10,7 @@
 # define VALID_MAP_CHAR	"01SCT"
 
 # define MOVE_SPEED 4
+# define ARROW_SPEED 2
 
 # define RED "\033[31m"
 # define GREEN "\033[32m"

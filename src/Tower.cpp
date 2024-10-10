@@ -3,16 +3,22 @@
 
 // Constructor
 
-Tower::Tower(sf::Texture &towerText, sf::Texture &weaponText, sf::Vector2f towerCoord)
+Tower::Tower(sf::Texture &towerText, sf::Texture *weaponTextArr, sf::Texture *arrowText, sf::Vector2f towerCoord)
 {
 	this->weaponAngle = 0;
 	this->weaponIdleAngle = 0;
 	this->idleAngleIncrement = 1;
 
-	this->attackRadius = 4 * TILE_SIZE; 
+	this->attackRadius = 4 * TILE_SIZE;
+	this->isShooting = false;
+	this->firstShotFired = false;
+	this->weaponAnimIterator = 1;
+
+	this->weaponTextureArr = weaponTextArr;
+	this->arrowTexture = arrowText;
 
 	this->towerSprite.setTexture(towerText);
-	this->weaponSprite.setTexture(weaponText);
+	this->weaponSprite.setTexture(weaponTextArr[0]);
 	this->weaponSprite.setOrigin(this->weaponSprite.getLocalBounds().width / 2, this->weaponSprite.getLocalBounds().height / 2);
 
 	this->towerCoord = towerCoord;
@@ -20,7 +26,9 @@ Tower::Tower(sf::Texture &towerText, sf::Texture &weaponText, sf::Vector2f tower
 
 
 
-// Functionalities
+/*
+	VISIBILITY CHECKS
+*/
 
 
 
@@ -67,6 +75,73 @@ bool	Tower::isSnakeVisible(sf::Vector2f snakeWorldCoord)
 }
 
 
+/*
+	SHOOTING ARROWS
+*/
+
+void	Tower::shootArrow(sf::Vector2f snakePos)
+{
+
+	// Move arrow
+
+	if (!this->arrowVec.empty())
+	{
+		for (int i = 0; i < this->arrowVec.size(); i++)
+		{
+			this->arrowVec[i].coord.x += ARROW_SPEED * this->arrowVec[i].dirVec.x;
+			this->arrowVec[i].coord.y += ARROW_SPEED * this->arrowVec[i].dirVec.y; // make FPS independent
+		}
+	}
+	
+	// Move arrow end
+
+	if (this->isShooting == false)
+	{
+		this->firstShotFired = false;
+		return ;
+	}
+	else if (this->isShooting == true && this->firstShotFired == false)
+	{
+		this->shootingClock.restart();
+		firstShotFired = true;
+		return ;
+	}
+	else if (this->shootingClock.getElapsedTime().asSeconds() < 1.0) // make FPS independent
+		return ;
+
+	struct arrow tempArrow;
+
+	tempArrow.angle = this->weaponAngle;
+	tempArrow.coord = this->getPosInPixels();
+
+	// TEST
+
+	float	len;
+
+	tempArrow.dirVec.x = snakePos.x - tempArrow.coord.x;
+	tempArrow.dirVec.y = snakePos.y - tempArrow.coord.y;
+
+	len = sqrtf(powf(tempArrow.dirVec.x, 2) + powf(tempArrow.dirVec.y, 2));
+
+	tempArrow.dirVec.x = tempArrow.dirVec.x / len;
+	tempArrow.dirVec.y = tempArrow.dirVec.y / len;
+
+
+	// TEST END
+
+	tempArrow.sprite.setTexture(*this->arrowTexture);
+	this->arrowVec.push_back(tempArrow);
+
+	this->weaponSprite.setTexture(this->weaponTextureArr[this->weaponAnimIterator]);
+	this->weaponAnimIterator++;
+
+	if (this->weaponAnimIterator == 2)
+		this->weaponAnimIterator = 0;
+
+	this->shootingClock.restart();
+
+}
+
 
 void	Tower::drawTower(sf::RenderWindow &window)
 {
@@ -75,7 +150,9 @@ void	Tower::drawTower(sf::RenderWindow &window)
 }
 
 
-// Getters && Setters
+/*
+	SETTERS
+*/
 
 void	Tower::setAngle(int newAngle)
 {
@@ -86,6 +163,8 @@ void	Tower::setIdleAngle()
 {
 	if (this->towerClock.getElapsedTime().asMilliseconds() < 30)
 		return ;
+
+	this->weaponSprite.setTexture(this->weaponTextureArr[0]);
 
 	if (this->weaponIdleAngle == 45)
 		this->idleAngleIncrement = -1;
@@ -111,25 +190,44 @@ void	Tower::setAttackAngle(sf::Vector2f snakePos)
 	sf::Vector2f diffVec;
 	float		radToDegMultiplier = 180.0 / PI;
 
-	diffVec.x = snakePos.x - ((this->towerCoord.x * TILE_SIZE) + 32); // 32 = half of tower width
-	diffVec.y = snakePos.y - ((this->towerCoord.y * TILE_SIZE) + 32); // 32 = half of tower width
+	// 16 = half of snake width/height, 32 = half of tower width/height
+	diffVec.x = (snakePos.x + 16) - ((this->towerCoord.x * TILE_SIZE) + 32);
+	diffVec.y = (snakePos.y + 16) - ((this->towerCoord.y * TILE_SIZE) + 32);
 
-//	std::cout << "DIFFVEC: x = " << diffVec.x << " y = " << diffVec.y << std::endl;
+	if (diffVec.x == 0)
+	{
+		if (diffVec.y < 0)
+			this->weaponAngle = 0;
+		else
+			this->weaponAngle = 180;
+		return ;
+	}
+	else if (diffVec.y == 0)
+	{
+		if (diffVec.x < 0)
+			this->weaponAngle = 270;
+		else
+			this->weaponAngle = 90;
+		return ;
+	}
 
-	/* 
-	THE FOLLOWING DOES NOT WORK!! Fix it later
-	*/
-
-	this->weaponAngle = radToDegMultiplier * atan(diffVec.y / diffVec.x);
-
-//	if (diffVec.x > 0 && diffVec.y < 0)
-//		this->weaponAngle *= -1;
-
-	std::cout << "ANGLE: " << this->weaponAngle << std::endl;
-
+	if (diffVec.x > 0)
+		this->weaponAngle = 90.0 + radToDegMultiplier * atan(diffVec.y / diffVec.x);
+	else
+		this->weaponAngle = 270.0 + radToDegMultiplier * atan(diffVec.y / diffVec.x);
 
 }
 
+
+void	Tower::setShootingFlag(bool value)
+{
+	this->isShooting = value;
+}
+
+
+/*
+	GETTERS
+*/
 
 sf::Vector2f	Tower::getPosInPixels()
 {

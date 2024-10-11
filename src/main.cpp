@@ -50,11 +50,17 @@ int main(int argc, char *argv[])
 
         window.clear();
 
-		game.updateGame();
 
-		game.checkCollision();
-
-		game.drawGame();
+		if (game.getGameState() == 0)
+		{
+			game.displayStartMenu();
+		}
+		else
+		{
+			game.updateGame();
+			game.checkCollision();
+			game.drawGame();
+		}
 
         window.display();
     }

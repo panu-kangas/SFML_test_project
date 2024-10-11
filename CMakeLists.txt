@@ -14,7 +14,7 @@ FetchContent_Declare(SFML
 FetchContent_MakeAvailable(SFML)
 
 add_executable(snake_2d src/main.cpp src/GameHandler.cpp src/Snake.cpp src/Map.cpp src/SnakeBody.cpp 
-src/TextBox.cpp src/ScoreCounter.cpp src/Tower.cpp)
+src/TextBox.cpp src/ScoreCounter.cpp src/Tower.cpp src/Arrow.cpp src/StartMenu.cpp)
 target_link_libraries(snake_2d PRIVATE sfml-graphics)
 target_compile_features(snake_2d PRIVATE cxx_std_17)
 target_include_directories(snake_2d PRIVATE include)

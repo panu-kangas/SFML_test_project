@@ -9,7 +9,7 @@ Tower::Tower(sf::Texture &towerText, sf::Texture *weaponTextArr, sf::Texture *ar
 	this->weaponIdleAngle = 0;
 	this->idleAngleIncrement = 1;
 
-	this->attackRadius = 4 * TILE_SIZE;
+	this->attackRadius = 8 * TILE_SIZE;
 	this->isShooting = false;
 	this->firstShotFired = false;
 	this->weaponAnimIterator = 1;
@@ -23,7 +23,6 @@ Tower::Tower(sf::Texture &towerText, sf::Texture *weaponTextArr, sf::Texture *ar
 
 	this->towerCoord = towerCoord;
 }
-
 
 
 /*
@@ -79,22 +78,8 @@ bool	Tower::isSnakeVisible(sf::Vector2f snakeWorldCoord)
 	SHOOTING ARROWS
 */
 
-void	Tower::shootArrow(sf::Vector2f snakePos)
+void	Tower::shootArrow(sf::Vector2f snakePos, std::vector<Arrow> &arrowVec)
 {
-
-	// Move arrow
-
-	if (!this->arrowVec.empty())
-	{
-		for (int i = 0; i < this->arrowVec.size(); i++)
-		{
-			this->arrowVec[i].coord.x += ARROW_SPEED * this->arrowVec[i].dirVec.x;
-			this->arrowVec[i].coord.y += ARROW_SPEED * this->arrowVec[i].dirVec.y; // make FPS independent
-		}
-	}
-	
-	// Move arrow end
-
 	if (this->isShooting == false)
 	{
 		this->firstShotFired = false;
@@ -109,31 +94,11 @@ void	Tower::shootArrow(sf::Vector2f snakePos)
 	else if (this->shootingClock.getElapsedTime().asSeconds() < 1.0) // make FPS independent
 		return ;
 
-	struct arrow tempArrow;
-
-	tempArrow.angle = this->weaponAngle;
-	tempArrow.coord = this->getPosInPixels();
-
-	// TEST
-
-	float	len;
-
-	tempArrow.dirVec.x = snakePos.x - tempArrow.coord.x;
-	tempArrow.dirVec.y = snakePos.y - tempArrow.coord.y;
-
-	len = sqrtf(powf(tempArrow.dirVec.x, 2) + powf(tempArrow.dirVec.y, 2));
-
-	tempArrow.dirVec.x = tempArrow.dirVec.x / len;
-	tempArrow.dirVec.y = tempArrow.dirVec.y / len;
-
-
-	// TEST END
-
-	tempArrow.sprite.setTexture(*this->arrowTexture);
-	this->arrowVec.push_back(tempArrow);
-
 	this->weaponSprite.setTexture(this->weaponTextureArr[this->weaponAnimIterator]);
 	this->weaponAnimIterator++;
+
+	if (weaponAnimIterator == 2) // this value will be something different
+		arrowVec.push_back(Arrow(weaponAngle, getMiddlePosInPixels(), *arrowTexture, snakePos));
 
 	if (this->weaponAnimIterator == 2)
 		this->weaponAnimIterator = 0;
@@ -143,10 +108,28 @@ void	Tower::shootArrow(sf::Vector2f snakePos)
 }
 
 
-void	Tower::drawTower(sf::RenderWindow &window)
+void	Tower::drawTower(sf::RenderWindow &window, int &drawX, int &drawY, sf::Vector2f snakePos)
 {
+	towerSprite.setPosition(drawX, drawY);
+
+	weaponSprite.setPosition(drawX + 32, drawY + 17); // make universal...?
+			
+	if (isSnakeVisible(snakePos) == false)
+	{
+		setShootingFlag(false);
+		setIdleAngle();
+	}
+	else
+	{
+		setShootingFlag(true);
+		setAttackAngle(snakePos);
+	}
+	
+	weaponSprite.setRotation(weaponAngle);
+
 	window.draw(this->towerSprite);
 	window.draw(this->weaponSprite);
+
 }
 
 
@@ -235,6 +218,14 @@ sf::Vector2f	Tower::getPosInPixels()
 
 	return (temp);
 }
+
+sf::Vector2f	Tower::getMiddlePosInPixels()
+{
+	sf::Vector2f temp(towerCoord.x * TILE_SIZE + TILE_SIZE, towerCoord.y * TILE_SIZE + TILE_SIZE);
+
+	return (temp);
+}
+
 
 sf::Sprite	&Tower::getSprite()
 {

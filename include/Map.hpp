@@ -26,7 +26,6 @@ class Map
 {
 	private:
 
-	int	tilesOnScreen;
 	int	mapWidth;
 	int	mapHeight;
 
@@ -40,22 +39,14 @@ class Map
 	sf::Vector2i snakeStartPos;
 
 	std::vector<std::vector<mapTile>>	wholeMapVec;
-	std::vector<Tower>					towerVec; // --> MOVE THIS TO GAMEHANDLER
-
-	int		xDrawLimits[2]; // in pixels!
-	int		yDrawLimits[2]; // in pixels!
-	bool	sideWallOnScreen;
-	bool	topBottomWallOnScreen;
+	std::vector<Tower>					towerVec;
 
 	void	readMapInfo(std::string filename);
 	void	checkValidMap(std::string mapStr, int rowLen); // Needs extra checks!!
 	void	setWholeMapVec(std::string mapStr, int rowLen);
-	void	setSnakeStartPos();
+	void	setSnakeAndTowerPos();
 
-	void	setXLimits(sf::Vector2f snakePos);
-	void	setYLimits(sf::Vector2f snakePos);
-
-	void	drawTowers(sf::RenderWindow &window, sf::Vector2f snakePos); // --> Move to GameHandler
+//	void	drawTowers(sf::RenderWindow &window, sf::Vector2f snakePos); // --> Move to GameHandler
 	int		checkTowerCollision(Snake &snake, sf::Vector2i snakeTileCoord);
 
 
@@ -65,7 +56,7 @@ class Map
 	~Map();
 
 	void	initMap(std::string filename);
-	void	drawMap(sf::RenderWindow &window, Snake &snake);
+	void	drawMap(sf::RenderWindow &window, sf::Vector2f snakePos, int *xDrawLim, int *yDrawLim);
 
 
 	int		checkCollisions(Snake &snake);
@@ -73,8 +64,11 @@ class Map
 	int		getMapWidth();
 	int		getMapHeight();
 
-	sf::Vector2i &getSnakeStartPos();
-	void		setTowerVec();
+	std::vector<Tower>	*getTowerVec();
+	sf::Vector2i		&getSnakeStartPos();
+	sf::Texture			&getWallTexture();
+	sf::Texture			&getGrassTexture();
+
 
 };
 

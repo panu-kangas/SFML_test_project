@@ -4,12 +4,10 @@
 	CONSTRUCTOR
 */
 
-// is this needed here...?
-
 GameHandler::GameHandler(sf::RenderWindow *gameWindow)
 {
-	this->window = gameWindow;
-	this->gameState = 1;
+	window = gameWindow;
+	gameState = 0;
 }
 
 
@@ -19,18 +17,18 @@ GameHandler::GameHandler(sf::RenderWindow *gameWindow)
 
 void	GameHandler::initGame(std::string mapFile)
 {
-	this->map.initMap(mapFile);
-	this->snake.initSnake(*this->window, this->map.getSnakeStartPos(), this->map.getMapWidth(), this->map.getMapHeight());
+	map.initMap(mapFile);
+	snake.initSnake(*window, map.getSnakeStartPos(), map.getMapWidth(), map.getMapHeight());
 	
-	this->score.initTextBox("fonts/pixel_font.ttf", 28);
-	this->score.setBackground(sf::Vector2f(112, 32), sf::Vector2f(0, 0), sf::Color::Black);
+	score.initTextBox("fonts/pixel_font.ttf", 28);
+	score.setBackground(sf::Vector2f(112, 32), sf::Vector2f(0, 0), sf::Color::Black);
 
-	this->snakeInfoPos = snake.getSnakeSprite().getPosition();
-	this->snakeInfoPos.x -= 90;
-	this->snakeInfoPos.y -= 32;
+	snakeInfoPos = snake.getSnakeSprite().getPosition();
+	snakeInfoPos.x -= 90;
+	snakeInfoPos.y -= 32;
 
-	this->snakeStartInfo.initTextBox("fonts/pixel_font.ttf", 18);
-	this->snakeStartInfo.setBackground(sf::Vector2f(230, 18), snakeInfoPos, sf::Color::Black);
+	snakeStartInfo.initTextBox("fonts/pixel_font.ttf", 18);
+	snakeStartInfo.setBackground(sf::Vector2f(230, 18), snakeInfoPos, sf::Color::Black);
 }
 
 
@@ -40,17 +38,28 @@ void	GameHandler::initGame(std::string mapFile)
 
 void	GameHandler::updateGame()
 {
-	if (this->gameState == 1)
-		snakeStartInfo.setText("Press W, A, S or D to start!", this->snakeInfoPos, sf::Color::Green);
+	if (gameState == 1)
+		snakeStartInfo.setText("Press W, A, S or D to start!", snakeInfoPos, sf::Color::Green);
 
-	this->map.drawMap(*this->window, this->snake);
-	this->snake.moveSnake(this->map.getMapWidth(), this->map.getMapHeight()); // Should I have map height & width in Handler as private...?
+	snake.moveSnake(map.getMapWidth(), map.getMapHeight()); // Should I have map height & width in Handler as private...?
 
-	if (this->snake.getStartMovingStatus() == true)
-		this->gameState = 2;
+	for (int i = 0; i < arrowVec.size(); ++i)
+	{
+		arrowVec[i].moveArrow();
+		
+		sf::Vector2f temp = arrowVec[i].getCoord();
 
-	this->score.setText(this->score.getScoreString(), sf::Vector2f(10, 0), sf::Color::Green);
+		if (temp.x < 0 || temp.x > map.getMapWidth() * TILE_SIZE \
+		|| temp.y < 0 || temp.y > map.getMapHeight() * TILE_SIZE)
+			arrowVec.erase(arrowVec.begin() + i);
 
+		// check that the above erase() is safe!!		
+	}
+	
+	if (snake.getStartMovingStatus() == true)
+		gameState = 2;
+
+	score.setText(score.getScoreString(), sf::Vector2f(10, 0), sf::Color::Green);
 
 }
 
@@ -61,12 +70,12 @@ void	GameHandler::updateGame()
 
 void	GameHandler::checkCollision()
 {
-	int	collisionFlag = this->map.checkCollisions(this->snake);
+	int	tempFlag = map.checkCollisions(snake);
 
-	if (collisionFlag == 1)
-		this->gameState = 3;
-	else if (collisionFlag == 2)
-		this->score.addScore(100);
+	if (tempFlag == 1)
+		gameState = 3;
+	else if (tempFlag == 2)
+		score.addScore(100);
 
 }
 
@@ -76,25 +85,142 @@ void	GameHandler::checkCollision()
 
 void	GameHandler::drawGame()
 {
-	this->snake.drawSnake(*this->window);
-	this->score.drawText(*this->window);
+	sf::Vector2f snakePos = snake.getSnakeWorldCoord();
 
-	if (this->gameState == 1)
-		snakeStartInfo.drawText(*this->window);
+	setXLimits(snakePos);
+	setYLimits(snakePos);
 
+	// MAP
+	map.drawMap(*window, snake.getSnakeWorldCoord(), xDrawLimits, yDrawLimits);
+
+	// TOWERS
+	towerVec = map.getTowerVec();
+	int	drawX, drawY;
+
+	for (Tower &temp : *towerVec)
+	{
+		if (temp.isVisible(xDrawLimits, yDrawLimits) == true)
+		{
+				drawX =	temp.getPosInPixels().x - this->xDrawLimits[0];
+				drawY = temp.getPosInPixels().y - this->yDrawLimits[0];
+				temp.shootArrow(snakePos, arrowVec);
+				temp.drawTower(*window, drawX, drawY, snake.getSnakeWorldCoord());
+		}
+		else
+			temp.getSprite().setPosition(-10, -10); // is this needed...?
+	}
+
+	// ARROWS
+
+	for (Arrow &temp : arrowVec) // do i need to check if it's empty...?
+	{
+		drawX =	temp.getCoord().x - this->xDrawLimits[0];
+		drawY = temp.getCoord().y - this->yDrawLimits[0];
+
+		if (drawX > 0 && drawX < map.getMapWidth() * TILE_SIZE \
+		&& drawY > 0 && drawY < map.getMapHeight() * TILE_SIZE)
+			temp.drawArrow(*window, drawX, drawY);
+	}
+	
+
+	// SNAKE
+	snake.drawSnake(*window);
+
+	// SCOREBOARD
+	score.drawText(*window);
+
+	if (gameState == 1)
+		snakeStartInfo.drawText(*window);
 
 }
 
 
 
-
 /*
-	CHANGE DIRECTION
+	CHANGE SNAKE DIRECTION
 */
 
 void	GameHandler::changeSnakeDir(sf::Event event)
 {
-	this->snake.changeDirection(event);
+	snake.changeDirection(event);
+}
+
+
+/*
+	SET DRAW LIMITS
+*/
+
+
+void	GameHandler::setXLimits(sf::Vector2f snakePos)
+{
+	// Should the multiplier (16) be universal and counted base on window size...?
+	// Now, if window size changes, the drawing doesn't work!
+
+	int mapWidth = map.getMapWidth();
+
+	xDrawLimits[0] = (snakePos.x) - (16 * TILE_SIZE);
+	xDrawLimits[1] = (snakePos.x) + (16 * TILE_SIZE) + TILE_SIZE;
+
+	if (xDrawLimits[0] <= 0)
+	{
+		xDrawLimits[0] = 0;
+		xDrawLimits[1] = WINDOW_WIDTH;
+		return ;
+	}
+	else if (xDrawLimits[1] >= mapWidth * TILE_SIZE)
+	{
+		xDrawLimits[0] = (mapWidth * TILE_SIZE) - (WINDOW_WIDTH);
+		xDrawLimits[1] = mapWidth * TILE_SIZE;
+	}
+
+	// Adding the off-screen part of first tile to the last drawn tile.
+	// This way, full screen gets drawn.
+
+	if (xDrawLimits[0] % TILE_SIZE != 0)
+		xDrawLimits[1] += TILE_SIZE - (xDrawLimits[0] % TILE_SIZE);
+
+
+}
+
+void	GameHandler::setYLimits(sf::Vector2f snakePos)
+{
+	// Should the multiplier (11) be universal and counted base on window size...?
+	// Now, if window size changes, the drawing doesn't work!
+
+	int mapHeight = map.getMapHeight();
+
+	yDrawLimits[0] = (snakePos.y) - (11 * TILE_SIZE);
+	yDrawLimits[1] = (snakePos.y) + (11 * TILE_SIZE) + TILE_SIZE;
+
+	if (yDrawLimits[0] <= 0)
+	{
+		yDrawLimits[0] = 0;
+		yDrawLimits[1] = WINDOW_HEIGHT;
+		return ;
+	}
+	else if (yDrawLimits[1] >= mapHeight * TILE_SIZE)
+	{
+		yDrawLimits[0] = (mapHeight * TILE_SIZE) - WINDOW_HEIGHT;
+		yDrawLimits[1] = mapHeight * TILE_SIZE;
+	}
+
+	// Adding the off-screen part of first tile to the last drawn tile.
+	// This way, full screen gets drawn.
+
+	if (yDrawLimits[0] % TILE_SIZE != 0)
+		yDrawLimits[1] += TILE_SIZE - (yDrawLimits[0] % TILE_SIZE);
+
+
+}
+
+
+/*
+	MENU
+*/
+
+void	GameHandler::displayStartMenu()
+{
+	startmenu.drawBackground(*window, map.getWallTexture(), map.getGrassTexture());
 }
 
 
@@ -107,7 +233,7 @@ void	GameHandler::changeSnakeDir(sf::Event event)
 
 int		GameHandler::getGameState()
 {
-	return (this->gameState);
+	return (gameState);
 }
 
 
@@ -117,7 +243,7 @@ int		GameHandler::getGameState()
 
 void	GameHandler::setGameState(int state)
 {
-	this->gameState = state;
+	gameState = state;
 }
 
 

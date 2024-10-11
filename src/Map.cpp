@@ -29,8 +29,6 @@ void	Map::initMap(std::string filename)
 		exit (1);
 	};
 
-	this->tilesOnScreen = (WINDOW_WIDTH / TILE_SIZE) * (WINDOW_HEIGHT / TILE_SIZE); // is this needed...?
-
 	readMapInfo(filename);
 }
 
@@ -74,14 +72,11 @@ void	Map::readMapInfo(std::string filename)
 
 	checkValidMap(mapStr, rowLen);
 
-
 	this->mapWidth = rowLen;
 	this->mapHeight = mapHeightCounter;
 
 	this->setWholeMapVec(mapStr, rowLen);
-	this->setSnakeStartPos(); // combine with setTowerVec
-	this->setTowerVec();
-
+	this->setSnakeAndTowerPos();
 }
 
 void	Map::checkValidMap(std::string mapStr, int rowLen)
@@ -161,35 +156,37 @@ void	Map::setWholeMapVec(std::string mapStr, int rowLen)
 
 // Drawing
 
-void	Map::drawMap(sf::RenderWindow &window, Snake &snake)
+void	Map::drawMap(sf::RenderWindow &window, sf::Vector2f snakePos, int *xDrawLim, int *yDrawLim)
 {
+	bool	sideWallOnScreen = false;
+	bool	topBottomWallOnScreen = false;
 
-	sf::Vector2f snakePos = snake.getSnakeWorldCoord(); 
+	if (xDrawLim[0] <= 0 || xDrawLim[0] == (mapWidth * TILE_SIZE) - (WINDOW_WIDTH))
+		sideWallOnScreen = true;
+	if (yDrawLim[0] <= 0 || yDrawLim[0] == (mapHeight * TILE_SIZE) - WINDOW_HEIGHT)
+		topBottomWallOnScreen = true;
+	
 
-	this->setXLimits(snakePos);
-	this->setYLimits(snakePos);
+	int	windowX, windowY, windowXStart;
 
-
-	int	windowX;
-	if (this->sideWallOnScreen == true)
+	if (sideWallOnScreen == true)
 		windowX = 0;
 	else
 		windowX = ((int)snakePos.x % TILE_SIZE) * -1;
 
-	int	windowXStart = windowX;
+	windowXStart = windowX;
 
 
-	int windowY;
-	if (this->topBottomWallOnScreen == true)
+	if (topBottomWallOnScreen == true)
 		windowY = 0;
 	else
 		windowY = ((int)snakePos.y % TILE_SIZE) * -1;
 
 
-	for (int y = this->yDrawLimits[0] / TILE_SIZE; y < this->yDrawLimits[1] / TILE_SIZE; y++)
+	for (int y = yDrawLim[0] / TILE_SIZE; y < yDrawLim[1] / TILE_SIZE; ++y)
 	{
 		windowX = windowXStart;
-		for (int x = this->xDrawLimits[0] / TILE_SIZE; x < this->xDrawLimits[1] / TILE_SIZE; x++)
+		for (int x = xDrawLim[0] / TILE_SIZE; x < xDrawLim[1] / TILE_SIZE; ++x)
 		{	
 			wholeMapVec[y][x].sprite.setPosition(windowX, windowY);
 			window.draw(wholeMapVec[y][x].sprite);
@@ -205,65 +202,7 @@ void	Map::drawMap(sf::RenderWindow &window, Snake &snake)
 		}
 		windowY += TILE_SIZE;
 	}
-
-	this->drawTowers(window, snakePos);
 	
-}
-
-void	Map::setXLimits(sf::Vector2f snakePos)
-{
-	// Should these be universal and counted base on window size...?
-	// Now, if window size changes, the drawing doesn't work!
-
-	this->sideWallOnScreen = false;
-	this->xDrawLimits[0] = (snakePos.x) - (16 * TILE_SIZE);
-	this->xDrawLimits[1] = (snakePos.x) + (16 * TILE_SIZE) + TILE_SIZE;
-
-	if (this->xDrawLimits[0] <= 0)
-	{
-		this->xDrawLimits[0] = 0;
-		this->xDrawLimits[1] = WINDOW_WIDTH;
-		this->sideWallOnScreen = true;
-		return ;
-	}
-	else if (this->xDrawLimits[1] >= this->mapWidth * TILE_SIZE)
-	{
-		this->xDrawLimits[0] = (this->mapWidth * TILE_SIZE) - (WINDOW_WIDTH);
-		this->xDrawLimits[1] = this->mapWidth * TILE_SIZE;
-		this->sideWallOnScreen = true;
-	}
-
-	if (this->xDrawLimits[0] % TILE_SIZE != 0)
-		this->xDrawLimits[1] += TILE_SIZE - (this->xDrawLimits[0] % TILE_SIZE);
-
-}
-
-void	Map::setYLimits(sf::Vector2f snakePos)
-{
-	// Should these be universal and counted base on window size...?
-	// Now, if window size changes, the drawing doesn't work!
-
-	this->topBottomWallOnScreen = false;
-	this->yDrawLimits[0] = (snakePos.y) - (11 * TILE_SIZE);
-	this->yDrawLimits[1] = (snakePos.y) + (11 * TILE_SIZE) + TILE_SIZE;
-
-	if (this->yDrawLimits[0] <= 0)
-	{
-		this->yDrawLimits[0] = 0;
-		this->yDrawLimits[1] = WINDOW_HEIGHT;
-		this->topBottomWallOnScreen = true;
-		return ;
-	}
-	else if (this->yDrawLimits[1] >= this->mapHeight * TILE_SIZE)
-	{
-		this->yDrawLimits[0] = (this->mapHeight * TILE_SIZE) - WINDOW_HEIGHT;
-		this->yDrawLimits[1] = this->mapHeight * TILE_SIZE;
-		this->topBottomWallOnScreen = true;
-	}
-
-	if (this->yDrawLimits[0] % TILE_SIZE != 0)
-		this->yDrawLimits[1] += TILE_SIZE - (this->yDrawLimits[0] % TILE_SIZE);
-
 }
 
 
@@ -325,14 +264,10 @@ int		Map::checkTowerCollision(Snake &snake, sf::Vector2i snakeTileCoord)
 	return (0);
 }
 
-// Utils
-
 /*
-char	Map::getTileType(int x, int y)
-{
-	return (wholeMapVec[y][x].type);
-}
+	UTILS
 */
+
 
 sf::Vector2i &Map::getSnakeStartPos()
 {
@@ -349,9 +284,28 @@ int		Map::getMapHeight()
 	return (this->mapHeight);
 }
 
-// COMBINE WITH setTowerVec !!!
+std::vector<Tower>	*Map::getTowerVec()
+{
+	return (&towerVec);
+}
 
-void	Map::setSnakeStartPos()
+sf::Texture	&Map::getWallTexture()
+{
+	return (wallTexture);
+}
+
+sf::Texture	&Map::getGrassTexture()
+{
+	return (grassTexture);
+}
+
+
+/*
+	SETTER
+*/
+
+
+void	Map::setSnakeAndTowerPos()
 {
 	for (int y = 0; y < wholeMapVec.size(); y++)
 	{
@@ -362,70 +316,9 @@ void	Map::setSnakeStartPos()
 				this->snakeStartPos.x = x;
 				this->snakeStartPos.y = y;
 			}
-		}
-	}
-}
-
-
-// TOWER FUNCTIONS
-
-
-// COMBINE WITH setSnakeStartPos !!!
-
-void	Map::setTowerVec()
-{
-	for (int y = 0; y < wholeMapVec.size(); y++)
-	{
-		for (int x = 0; x < wholeMapVec[y].size(); x++)
-		{
-			if (wholeMapVec[y][x].type == 'T')
+			else if (wholeMapVec[y][x].type == 'T')
 				this->towerVec.push_back(Tower(this->towerTexture, this->towerWeaponText, &this->arrowTexture, sf::Vector2f(x, y)));
 		}
-	}
-
-}
-
-void	Map::drawTowers(sf::RenderWindow &window, sf::Vector2f snakePos)
-{
-	int 			drawX;
-	int 			drawY;
-	sf::Vector2f	towerCoord;
-
-	for (int i = 0; i < this->towerVec.size(); i++)
-	{
-		if (this->towerVec[i].isVisible(this->xDrawLimits, this->yDrawLimits) == true)
-		{
-			towerCoord = this->towerVec[i].getPosInPixels();
-
-			drawX =	towerCoord.x - this->xDrawLimits[0];
-			drawY = towerCoord.y - this->yDrawLimits[0];
-
-			this->towerVec[i].shootArrow(snakePos);
-
-
-			this->towerVec[i].getSprite().setPosition(drawX, drawY);
-
-			this->towerVec[i].getWeaponSprite().setPosition(drawX + 32, drawY + 17); // make universal...?
-			
-			if (this->towerVec[i].isSnakeVisible(snakePos) == false)
-			{
-				this->towerVec[i].setShootingFlag(false);
-				this->towerVec[i].setIdleAngle();
-			}
-			else
-			{
-				this->towerVec[i].setShootingFlag(true);
-				this->towerVec[i].setAttackAngle(snakePos);
-			}
-	
-			this->towerVec[i].getWeaponSprite().setRotation(this->towerVec[i].getWeaponAngle());
-
-
-			this->towerVec[i].drawTower(window);
-		}
-		else
-			this->towerVec[i].getSprite().setPosition(-10, -10);
-
 	}
 }
 

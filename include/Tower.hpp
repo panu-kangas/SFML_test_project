@@ -6,15 +6,8 @@
 # include <SFML/Graphics.hpp>
 
 # include "Constants.hpp"
+# include "Arrow.hpp"
 
-
-struct arrow
-{
-	int				angle;
-	sf::Vector2f	coord;
-	sf::Vector2f	dirVec;
-	sf::Sprite		sprite;
-};
 
 
 class Tower
@@ -32,8 +25,6 @@ class Tower
 	sf::Clock		towerClock;
 	sf::Clock		shootingClock;
 
-	std::vector<arrow>	arrowVec;
-
 	int				weaponAngle;
 	int				weaponIdleAngle;
 	int				idleAngleIncrement;
@@ -50,11 +41,12 @@ class Tower
 	Tower(sf::Texture &towerText, sf::Texture *weaponTextArr, sf::Texture *arrowText, sf::Vector2f towerCoord);
 	~Tower() {};
 
-	void	drawTower(sf::RenderWindow &window);
+	void	drawTower(sf::RenderWindow &window, int &drawX, int &drawY, sf::Vector2f snakePos);
+
 	bool	isVisible(int *xDrawLimits, int *yDrawLimits);
 	bool	isSnakeVisible(sf::Vector2f snakeWorldCoord);
 
-	void	shootArrow(sf::Vector2f snakePos);
+	void	shootArrow(sf::Vector2f snakePos, std::vector<Arrow> &arrowVec);
 
 
 	void	setAngle(int newAngle);
@@ -63,6 +55,7 @@ class Tower
 	void	setShootingFlag(bool value);
 
 	sf::Vector2f	getPosInPixels();
+	sf::Vector2f	getMiddlePosInPixels();
 	sf::Sprite		&getSprite();
 	sf::Sprite		&getWeaponSprite();
 	int				&getWeaponAngle();

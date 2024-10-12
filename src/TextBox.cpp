@@ -30,7 +30,7 @@ void	TextBox::setText(std::string text, sf::Vector2f position, sf::Color color)
 	this->boxText.setPosition(position.x, position.y);
 }
 
-void	TextBox::drawText(sf::RenderWindow &window)
+void	TextBox::drawTextBox(sf::RenderWindow &window)
 {
 	window.draw(this->boxBackground);
 	window.draw(this->boxText);

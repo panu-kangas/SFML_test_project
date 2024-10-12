@@ -48,7 +48,7 @@ class GameHandler
 
 	// Should I have a default constructor here...?
 	GameHandler(sf::RenderWindow *gameWindow);
-	~GameHandler() { std::cout << "ARROW VEC SIZE: " << arrowVec.size() << std::endl; };
+	~GameHandler() {};
 
 	void	initGame(std::string mapFile);
 	void	updateGame();
@@ -56,8 +56,9 @@ class GameHandler
 	void	drawGame();
 
 	void	displayStartMenu();
+	void	startMenuInput(sf::Event &event);
 
-	void	changeSnakeDir(sf::Event event);
+	void	changeSnakeDir(sf::Event &event);
 
 
 	int		getGameState();

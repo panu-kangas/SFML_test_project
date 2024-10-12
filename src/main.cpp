@@ -40,7 +40,10 @@ int main(int argc, char *argv[])
             }
 			else if (event.type == sf::Event::KeyPressed)
 			{
-				game.changeSnakeDir(event);
+				if (game.getGameState() == 0)
+					game.startMenuInput(event);
+				else
+					game.changeSnakeDir(event);
 
 				if (event.key.scancode == sf::Keyboard::Scan::Escape)
 					window.close(); // should I break ; here...?

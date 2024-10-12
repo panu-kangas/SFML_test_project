@@ -127,20 +127,42 @@ void	GameHandler::drawGame()
 	snake.drawSnake(*window);
 
 	// SCOREBOARD
-	score.drawText(*window);
+	score.drawTextBox(*window);
 
 	if (gameState == 1)
-		snakeStartInfo.drawText(*window);
+		snakeStartInfo.drawTextBox(*window);
 
 }
 
+/*
+	START MENU INPUT
+*/
+
+void	GameHandler::startMenuInput(sf::Event &event)
+{
+	if (event.key.code == sf::Keyboard::Key::Up) // scancode vs key ???
+		startmenu.decrementSelector();
+	else if (event.key.code == sf::Keyboard::Key::Down) // scancode vs key ???
+		startmenu.incrementSelector();
+	else if (event.key.code == sf::Keyboard::Key::Enter)
+	{
+		if (startmenu.getSelector() == 0)
+			gameState = 1;
+		else
+		{
+			std::cout << "\033[31m" 
+			<< "\nWell... you could have at least tried the game! =(\n" << "\033[0m" << std::endl;
+			exit (0);
+		}
+	}
+}
 
 
 /*
 	CHANGE SNAKE DIRECTION
 */
 
-void	GameHandler::changeSnakeDir(sf::Event event)
+void	GameHandler::changeSnakeDir(sf::Event &event)
 {
 	snake.changeDirection(event);
 }
@@ -220,7 +242,7 @@ void	GameHandler::setYLimits(sf::Vector2f snakePos)
 
 void	GameHandler::displayStartMenu()
 {
-	startmenu.drawBackground(*window, map.getWallTexture(), map.getGrassTexture());
+	startmenu.drawMenu(*window, map.getWallTexture(), map.getGrassTexture());
 }
 
 

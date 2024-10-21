@@ -15,21 +15,25 @@ class Snake
 
 	sf::Texture	snakeHeadTexture;
 	sf::Sprite	snakeHeadSprite;
-	sf::Clock	snakeClock;
 
 	sf::Texture				bodyTexture;
 	std::vector<SnakeBody>	bodyVec;
 	int						bodyCount;
 
 	bool		startMoving;
+	bool		isBoosting;
+	bool		bodyReady;
 
 	int			curDirection; // 0 up, 1 right, 2 down, 3 left
 	int			newDirection;
 	int			moveSpeed;
+	float		boostCounter;
 
 	sf::Vector2f	snakeWorldCoord; // in pixels!
 
 	void	setSpritePosition(int mapWidth, int mapHeight);
+	void	checkBoost(float dt);
+
 
 	public:
 
@@ -38,12 +42,19 @@ class Snake
 
 	void	initSnake(sf::RenderWindow &window, sf::Vector2i startPos, int mapWidth, int mapHeight);
 	void	drawSnake(sf::RenderWindow &window);
-	void	moveSnake(int mapWidth, int mapHeight);
+	void	moveSnake(int mapWidth, int mapHeight, float dt);
 	void	changeDirection(sf::Event &keypress);
 
-	sf::Sprite		&getSnakeSprite();
-	sf::Vector2f	getSnakeWorldCoord();
-	bool			getStartMovingStatus();
+	void		setSpeed(int newSpeed);
+	void		setBoostStatus(bool status);
+
+	int						getMoveSpeed();
+	sf::Sprite				&getSnakeSprite();
+	sf::Vector2f			getSnakeWorldCoord();
+	std::vector<SnakeBody>	&getBodyVec();
+	bool					getStartMovingStatus();
+	bool					getBoostStatus();
+	float					getBoostCounter();
 };
 
 #endif

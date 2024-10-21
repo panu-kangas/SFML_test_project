@@ -23,6 +23,7 @@ class GameHandler
 	ScoreCounter	score;
 	StartMenu		startmenu;
 	TextBox			snakeStartInfo;
+	TextBox			boostMeter;
 
 	sf::RenderWindow	*window;
 
@@ -35,6 +36,17 @@ class GameHandler
 	// 0 = start screen (NOT DONE), 1 = snake still, 2 = start, 3 = game over
 	int		gameState;
 
+	enum	states{
+		StartMenu,
+		SnakeStill,
+		SnakeMove,
+		GameOver
+	};
+
+	bool		spaceReleased;
+
+
+
 	int		xDrawLimits[2]; // in pixels!
 	int		yDrawLimits[2]; // in pixels!
 
@@ -42,6 +54,8 @@ class GameHandler
 
 	void	setXLimits(sf::Vector2f snakePos);
 	void	setYLimits(sf::Vector2f snakePos);
+	int		checkArrowCollision();
+
 
 
 	public:
@@ -51,19 +65,20 @@ class GameHandler
 	~GameHandler() {};
 
 	void	initGame(std::string mapFile);
-	void	updateGame();
+	void	updateGame(float dt);
 	void	checkCollision();
-	void	drawGame();
+	void	drawGame(float dt);
 
 	void	displayStartMenu();
 	void	startMenuInput(sf::Event &event);
 
-	void	changeSnakeDir(sf::Event &event);
+	void	checkInput(sf::Event &event);
 
 
 	int		getGameState();
 
 	void	setGameState(int state);
+//	void	setSpaceState(bool state);
 
 };
 

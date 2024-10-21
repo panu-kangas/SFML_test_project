@@ -220,9 +220,9 @@ int		Map::checkCollisions(Snake &snake)
 	snakeTileCoord.x = snakeWorldCoord.x / TILE_SIZE;
 	snakeTileCoord.y = snakeWorldCoord.y / TILE_SIZE;
 
-	for (int y = snakeTileCoord.y - 1; y < snakeTileCoord.y + 2; y++)
+	for (int y = snakeTileCoord.y - 1; y < snakeTileCoord.y + 2; ++y)
 	{
-		for (int x = snakeTileCoord.x - 1; x < snakeTileCoord.x + 2; x++)
+		for (int x = snakeTileCoord.x - 1; x < snakeTileCoord.x + 2; ++x)
 		{	
 			if (x >= 0 && x < this->mapWidth && y >= 0 && y < this->mapHeight)
 			{
@@ -298,6 +298,12 @@ sf::Texture	&Map::getGrassTexture()
 {
 	return (grassTexture);
 }
+
+mapTile		&Map::getTileInfo(int x, int y)
+{
+	return (wholeMapVec[y][x]);
+}
+
 
 
 /*

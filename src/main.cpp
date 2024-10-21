@@ -16,16 +16,16 @@ int main(int argc, char *argv[])
     window.setFramerateLimit(60); // check this later
 
 
-
 	GameHandler game(&window);
 	game.initGame(argv[1]);
 
+	sf::Clock	deltaClock;
 
 
     while (window.isOpen())
     {
 
-		if (game.getGameState() == 3)
+		if (game.getGameState() == 3) // how to get enum here...? Use global enum?
 		{
 			std::cout << "\033[31m" << "\nYOU LOSE!\n" << "\033[0m" << std::endl;
 			window.close();
@@ -38,31 +38,33 @@ int main(int argc, char *argv[])
             {
                 window.close();
             }
-			else if (event.type == sf::Event::KeyPressed)
+			else if (event.type == sf::Event::KeyPressed || event.type == sf::Event::KeyReleased)
 			{
-				if (game.getGameState() == 0)
+				if (game.getGameState() == 0) // how to get enum here...? Use global enum?
 					game.startMenuInput(event);
 				else
-					game.changeSnakeDir(event);
+					game.checkInput(event);
 
 				if (event.key.scancode == sf::Keyboard::Scan::Escape)
 					window.close(); // should I break ; here...?
 			}
         }
 
+		sf::Time dt = deltaClock.restart();
+
 
         window.clear();
 
 
-		if (game.getGameState() == 0)
+		if (game.getGameState() == 0) // how to get enum here...? Use global enum?
 		{
 			game.displayStartMenu();
 		}
 		else
 		{
-			game.updateGame();
+			game.updateGame(dt.asSeconds());
 			game.checkCollision();
-			game.drawGame();
+			game.drawGame(dt.asSeconds());
 		}
 
         window.display();

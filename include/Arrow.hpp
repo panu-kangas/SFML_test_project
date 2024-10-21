@@ -17,19 +17,23 @@ class Arrow
 	sf::Vector2f	dirVec;
 	sf::Sprite		sprite;
 
+	float			arrowVel;
+
 	public:
 
-	Arrow(int initAngle, sf::Vector2f initCoord, sf::Texture &texture, sf::Vector2f snakePos);
+	Arrow(sf::Vector2f initCoord, sf::Texture &texture, sf::Vector2f snakePos);
 	~Arrow() {};
 
 
-	void	moveArrow();
+	void	moveArrow(float dt);
 	void	drawArrow(sf::RenderWindow &window, int &drawX, int &drawY);
 
 
 
-	sf::Vector2f &getCoord();
-	sf::Vector2f &getDirVec();
+	sf::Vector2f	&getCoord();
+	sf::Vector2f	getArrowTipCoord();
+	sf::Vector2f	&getDirVec();
+	sf::Sprite		&getSprite();
 
 
 };

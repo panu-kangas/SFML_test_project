@@ -13,6 +13,7 @@ class SnakeBody
 
 	sf::Sprite	bodySprite;
 	SnakeBody	*nextBody;
+	SnakeBody	*prevBody;
 
 	int			bodyNum;
 	int			curDirection; // 0 up, 1 right, 2 down, 3 left
@@ -22,7 +23,9 @@ class SnakeBody
 	sf::Vector2f	bodyWorldCoord; // in pixels!
 
 	std::vector<int> 			newDirVec;
-	std::vector<sf::Vector2f>	turnPointVec;
+	std::vector<sf::Vector2i>	turnPointVec; // CHANGE THIS TO FLOAT ???
+
+
 
 
 	public:
@@ -32,12 +35,17 @@ class SnakeBody
 
 	void	InitBody(sf::RenderWindow &window, sf::Texture &bodyText, sf::Vector2i startPos, int num);
 	void	drawSnakeBody(sf::RenderWindow &window);
-	void	moveSnakeBody(int mapWidth, int mapHeight, sf::Vector2f snakeHeadPos);
+	void	moveSnakeBody(int mapWidth, int mapHeight, sf::Vector2f snakeHeadPos, float dt);
 
-	void	addTurn(int direction, sf::Vector2f turnPoint);
+	void	addTurn(int direction, sf::Vector2i turnPoint);
+	void	setSpeed(int newSpeed);
 	void	setNextBody(SnakeBody *next);
+	void	setPrevBody(SnakeBody *prev);
+	bool	checkTurningPoint();
 
-//	sf::Sprite &getSnakeSprite(); --> Might be needed for collision check later
+	sf::Sprite		&getSprite();
+	int				getMoveSpeedCounter();
+	sf::Vector2f	&getBodyCoord();
 
 };
 

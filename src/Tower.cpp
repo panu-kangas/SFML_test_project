@@ -3,11 +3,10 @@
 
 // Constructor
 
-Tower::Tower(sf::Texture &towerText, sf::Texture *weaponTextArr, sf::Texture *arrowText, sf::Vector2f towerCoord)
+Tower::Tower(sf::Texture &towerText, sf::Texture *weaponTextArr, sf::Texture *arrowText, sf::Vector2f towerCoord) : IdleAngleVelocity(30.0)
 {
 	this->weaponAngle = 0;
 	this->weaponIdleAngle = 0;
-	this->idleAngleIncrement = 1;
 
 	this->attackRadius = 8 * TILE_SIZE;
 	this->isShooting = false;
@@ -78,9 +77,9 @@ bool	Tower::isSnakeVisible(sf::Vector2f snakeWorldCoord)
 	SHOOTING ARROWS
 */
 
-void	Tower::shootArrow(sf::Vector2f snakePos, std::vector<Arrow> &arrowVec)
+void	Tower::shootArrow(sf::Vector2f snakePos, std::vector<Arrow> &arrowVec, bool snakeMoveStat)
 {
-	if (this->isShooting == false)
+	if (this->isShooting == false || snakeMoveStat == false)
 	{
 		this->firstShotFired = false;
 		return ;
@@ -91,24 +90,24 @@ void	Tower::shootArrow(sf::Vector2f snakePos, std::vector<Arrow> &arrowVec)
 		firstShotFired = true;
 		return ;
 	}
-	else if (this->shootingClock.getElapsedTime().asSeconds() < 1.0) // make FPS independent
+	else if (this->shootingClock.getElapsedTime().asSeconds() < 1.0)
 		return ;
 
 	this->weaponSprite.setTexture(this->weaponTextureArr[this->weaponAnimIterator]);
 	this->weaponAnimIterator++;
 
-	if (weaponAnimIterator == 2) // this value will be something different
-		arrowVec.push_back(Arrow(weaponAngle, getMiddlePosInPixels(), *arrowTexture, snakePos));
-
-	if (this->weaponAnimIterator == 2)
+	if (weaponAnimIterator == 2) // this value might be something different
+	{
+		arrowVec.push_back(Arrow(getMiddlePosInPixels(), *arrowTexture, snakePos));
 		this->weaponAnimIterator = 0;
+	}
 
 	this->shootingClock.restart();
 
 }
 
 
-void	Tower::drawTower(sf::RenderWindow &window, int &drawX, int &drawY, sf::Vector2f snakePos)
+void	Tower::drawTower(sf::RenderWindow &window, int &drawX, int &drawY, sf::Vector2f snakePos, float dt)
 {
 	towerSprite.setPosition(drawX, drawY);
 
@@ -117,12 +116,13 @@ void	Tower::drawTower(sf::RenderWindow &window, int &drawX, int &drawY, sf::Vect
 	if (isSnakeVisible(snakePos) == false)
 	{
 		setShootingFlag(false);
-		setIdleAngle();
+		setIdleAngle(dt);
 	}
 	else
 	{
 		setShootingFlag(true);
-		setAttackAngle(snakePos);
+		if (weaponAnimIterator == 1)
+			setAttackAngle(snakePos);
 	}
 	
 	weaponSprite.setRotation(weaponAngle);
@@ -142,28 +142,27 @@ void	Tower::setAngle(int newAngle)
 	this->weaponAngle = newAngle;
 }
 
-void	Tower::setIdleAngle()
+void	Tower::setIdleAngle(float dt)
 {
-	if (this->towerClock.getElapsedTime().asMilliseconds() < 30)
-		return ;
+	static float idleAngleIncrement;
 
-	this->weaponSprite.setTexture(this->weaponTextureArr[0]);
+	weaponSprite.setTexture(weaponTextureArr[0]);
 
-	if (this->weaponIdleAngle == 45)
-		this->idleAngleIncrement = -1;
-	else if (this->weaponIdleAngle == 315)
-		this->idleAngleIncrement = 1;
+	if (idleAngleIncrement == 0)
+		idleAngleIncrement = IdleAngleVelocity * dt;
+	else if (weaponIdleAngle >= 45 && weaponIdleAngle <= 47)
+		idleAngleIncrement = IdleAngleVelocity * -1.0 * dt;
+	else if (weaponIdleAngle >= 315 && weaponIdleAngle <= 317)
+		idleAngleIncrement = IdleAngleVelocity * dt;
 
-	this->weaponIdleAngle += this->idleAngleIncrement;
+	weaponIdleAngle += idleAngleIncrement;
 
-	if (this->weaponIdleAngle > 360)
-		this->weaponIdleAngle -= 360;
-	else if (this->weaponIdleAngle < 0)
-		this->weaponIdleAngle += 360;
+	if (weaponIdleAngle > 360)
+		weaponIdleAngle -= 360;
+	else if (weaponIdleAngle < 0)
+		weaponIdleAngle += 360;
 
-	this->weaponAngle = this->weaponIdleAngle;
-
-	this->towerClock.restart();
+	weaponAngle = weaponIdleAngle;
 
 }
 
@@ -173,7 +172,7 @@ void	Tower::setAttackAngle(sf::Vector2f snakePos)
 	sf::Vector2f diffVec;
 	float		radToDegMultiplier = 180.0 / PI;
 
-	// 16 = half of snake width/height, 32 = half of tower width/height
+	// 16 = half of snake width & height, 32 = half of tower width & height
 	diffVec.x = (snakePos.x + 16) - ((this->towerCoord.x * TILE_SIZE) + 32);
 	diffVec.y = (snakePos.y + 16) - ((this->towerCoord.y * TILE_SIZE) + 32);
 
@@ -221,7 +220,7 @@ sf::Vector2f	Tower::getPosInPixels()
 
 sf::Vector2f	Tower::getMiddlePosInPixels()
 {
-	sf::Vector2f temp(towerCoord.x * TILE_SIZE + TILE_SIZE, towerCoord.y * TILE_SIZE + TILE_SIZE);
+	sf::Vector2f temp(towerCoord.x * TILE_SIZE + 32, towerCoord.y * TILE_SIZE + 17);
 
 	return (temp);
 }
@@ -237,9 +236,10 @@ sf::Sprite	&Tower::getWeaponSprite()
 	return (this->weaponSprite);
 }
 
-int			&Tower::getWeaponAngle()
+float		&Tower::getWeaponAngle()
 {
 	return (this->weaponAngle);
 }
+
 
 

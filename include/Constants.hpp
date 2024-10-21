@@ -9,8 +9,12 @@
 
 # define VALID_MAP_CHAR	"01SCT"
 
-# define MOVE_SPEED 4
-# define ARROW_SPEED 2
+# define SNAKE_INIT_SPEED	110
+# define SNAKE_BOOST_SPEED	180
+
+# define BOOST_MAX			100
+# define BOOST_REDUCE		70
+# define BOOST_REPLENISH	10
 
 # define RED "\033[31m"
 # define GREEN "\033[32m"

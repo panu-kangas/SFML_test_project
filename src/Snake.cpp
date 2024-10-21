@@ -6,9 +6,12 @@ Snake::Snake()
 {
 	this->curDirection = 0;
 	this->newDirection = 0;
-	this->moveSpeed = MOVE_SPEED;
+	this->moveSpeed = SNAKE_INIT_SPEED;
 	this->bodyCount = 3;
 	this->startMoving = false;
+	this->isBoosting = false;
+	this->bodyReady = false;
+	this->boostCounter = BOOST_MAX;
 
 }
 
@@ -39,8 +42,18 @@ void	Snake::initSnake(sf::RenderWindow &window, sf::Vector2i startPos, int mapWi
 		tempBody.InitBody(window, this->bodyTexture, startPos, i);
 		this->bodyVec.push_back(tempBody);
 	}
-	for (int i = 0; i < this->bodyCount - 1; i++)
-		this->bodyVec[i].setNextBody(&this->bodyVec[i + 1]);
+	for (int i = 0; i < this->bodyCount; i++)
+	{
+		if (i == 0)
+			this->bodyVec[i].setNextBody(&this->bodyVec[i + 1]);
+		else if (i == bodyCount - 1)
+			this->bodyVec[i].setPrevBody(&this->bodyVec[i - 1]);
+		else
+		{
+			this->bodyVec[i].setNextBody(&this->bodyVec[i + 1]);
+			this->bodyVec[i].setPrevBody(&this->bodyVec[i - 1]);
+		}
+	}
 
 }
 
@@ -89,20 +102,18 @@ void	Snake::changeDirection(sf::Event &keypress)
 
 }
 
-void	Snake::moveSnake(int mapWidth, int mapHeight)
+void	Snake::moveSnake(int mapWidth, int mapHeight, float dt)
 {
 	int 	x = 0;
 	int		y = 0;
 
-	if (this->snakeClock.getElapsedTime().asMilliseconds() < 20 || this->startMoving == false)
+	if (this->startMoving == false)
 		return ;
 
 	if (this->curDirection != this->newDirection)
 	{
 		this->curDirection = this->newDirection;
-		for (int i = 0; i < this->bodyCount; i++)
-			this->bodyVec[i].addTurn\
-			(this->newDirection, sf::Vector2f(this->snakeWorldCoord.x, this->snakeWorldCoord.y));
+		this->bodyVec[0].addTurn(newDirection, sf::Vector2i(snakeWorldCoord.x, snakeWorldCoord.y));
 	}
 
 	switch (this->curDirection)
@@ -123,26 +134,19 @@ void	Snake::moveSnake(int mapWidth, int mapHeight)
 			x = 0;
 	}
 
-/*
-OLD VERSION
+	if (bodyReady == true)
+		checkBoost(dt);
 
-	if (((this->curDirection == 0 || this->curDirection == 2) && topBottomWallOnScreen == true) \
-	|| ((this->curDirection == 1 || this->curDirection == 3) && sideWallOnScreen == true))
-	{
-		this->snakeHeadSprite.move(x * moveSpeed, y * moveSpeed);
-	}
-*/
-
-	this->snakeWorldCoord.x += x * moveSpeed;
-	this->snakeWorldCoord.y += y * moveSpeed;
+	this->snakeWorldCoord.x += x * moveSpeed * dt;
+	this->snakeWorldCoord.y += y * moveSpeed * dt;
 
 	this->setSpritePosition(mapWidth, mapHeight);
 
-
 	for (int i = 0; i < this->bodyCount; i++)
-		this->bodyVec[i].moveSnakeBody(mapWidth, mapHeight, this->snakeWorldCoord);
+		this->bodyVec[i].moveSnakeBody(mapWidth, mapHeight, this->snakeWorldCoord, dt);
 
-	this->snakeClock.restart();
+	if (bodyReady == false && !bodyVec.empty() && bodyVec.back().getMoveSpeedCounter() == 0)
+		bodyReady = true;
 
 }
 
@@ -164,7 +168,57 @@ void	Snake::setSpritePosition(int mapWidth, int mapHeight)
 	this->snakeHeadSprite.setPosition(drawCoordX, drawCoordY);
 }
 
-// Utils
+
+
+/*
+	BOOST HANDLING
+*/
+
+
+void	Snake::checkBoost(float dt)
+{
+	if (isBoosting == true && moveSpeed == SNAKE_INIT_SPEED)
+		setSpeed(SNAKE_BOOST_SPEED);
+	else if (isBoosting == false && moveSpeed == SNAKE_BOOST_SPEED)
+		setSpeed(SNAKE_INIT_SPEED);
+
+	if (moveSpeed == SNAKE_INIT_SPEED && boostCounter < BOOST_MAX)
+		boostCounter += dt * BOOST_REPLENISH;
+	else if (moveSpeed == SNAKE_BOOST_SPEED && boostCounter > 0)
+		boostCounter -= dt * BOOST_REDUCE;
+	else if (boostCounter <= 0)
+		isBoosting = false;
+
+}
+
+
+/*
+	SETTERS
+*/
+
+void	Snake::setSpeed(int newSpeed)
+{
+	moveSpeed = newSpeed;
+	for (SnakeBody &temp : bodyVec)
+		temp.setSpeed(newSpeed);
+}
+
+void	Snake::setBoostStatus(bool status)
+{
+	isBoosting = status;
+}
+
+
+
+/*
+	GETTERS
+*/
+
+int			Snake::getMoveSpeed()
+{
+	return (moveSpeed);
+}
+
 
 sf::Sprite &Snake::getSnakeSprite()
 {
@@ -176,10 +230,27 @@ sf::Vector2f Snake::getSnakeWorldCoord()
 	return (this->snakeWorldCoord);
 }
 
+std::vector<SnakeBody>	&Snake::getBodyVec()
+{
+	return (bodyVec);
+}
+
+
 bool	Snake::getStartMovingStatus()
 {
 	return (this->startMoving);
 }
+
+bool	Snake::getBoostStatus()
+{
+	return (isBoosting);
+}
+
+float	Snake::getBoostCounter()
+{
+	return (boostCounter);
+}
+
 
 
 

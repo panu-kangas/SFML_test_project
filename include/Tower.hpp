@@ -22,12 +22,11 @@ class Tower
 
 	sf::Vector2f	towerCoord; // Tile coordinates, NOT pixels!!
 
-	sf::Clock		towerClock;
+	const float		IdleAngleVelocity;
 	sf::Clock		shootingClock;
 
-	int				weaponAngle;
-	int				weaponIdleAngle;
-	int				idleAngleIncrement;
+	float			weaponAngle;
+	float			weaponIdleAngle;
 
 	int				attackRadius;
 
@@ -41,16 +40,16 @@ class Tower
 	Tower(sf::Texture &towerText, sf::Texture *weaponTextArr, sf::Texture *arrowText, sf::Vector2f towerCoord);
 	~Tower() {};
 
-	void	drawTower(sf::RenderWindow &window, int &drawX, int &drawY, sf::Vector2f snakePos);
+	void	drawTower(sf::RenderWindow &window, int &drawX, int &drawY, sf::Vector2f snakePos, float dt);
 
 	bool	isVisible(int *xDrawLimits, int *yDrawLimits);
 	bool	isSnakeVisible(sf::Vector2f snakeWorldCoord);
 
-	void	shootArrow(sf::Vector2f snakePos, std::vector<Arrow> &arrowVec);
+	void	shootArrow(sf::Vector2f snakePos, std::vector<Arrow> &arrowVec, bool snakeMoveStat);
 
 
 	void	setAngle(int newAngle);
-	void	setIdleAngle();
+	void	setIdleAngle(float dt);
 	void	setAttackAngle(sf::Vector2f snakePos);
 	void	setShootingFlag(bool value);
 
@@ -58,7 +57,7 @@ class Tower
 	sf::Vector2f	getMiddlePosInPixels();
 	sf::Sprite		&getSprite();
 	sf::Sprite		&getWeaponSprite();
-	int				&getWeaponAngle();
+	float			&getWeaponAngle();
 
 };
 

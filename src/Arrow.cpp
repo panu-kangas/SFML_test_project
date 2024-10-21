@@ -1,9 +1,8 @@
 #include "Arrow.hpp"
 
 
-Arrow::Arrow(int initAngle, sf::Vector2f initCoord, sf::Texture &texture, sf::Vector2f snakePos)
+Arrow::Arrow(sf::Vector2f initCoord, sf::Texture &texture, sf::Vector2f snakePos) : arrowVel(140.0)
 {
-	angle = initAngle; // is this needed...?
 	coord = initCoord;
 
 	float	len;
@@ -17,6 +16,41 @@ Arrow::Arrow(int initAngle, sf::Vector2f initCoord, sf::Texture &texture, sf::Ve
 	dirVec.y = dirVec.y / len;
 
 	sprite.setTexture(texture);
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+
+	// TEST (make separate function)
+
+	float		radToDegMultiplier = 180.0 / PI;
+
+	if (dirVec.x == 0)
+	{
+		if (dirVec.y < 0)
+			angle = 0;
+		else
+			angle = 180;
+		return ;
+	}
+	else if (dirVec.y == 0)
+	{
+		if (dirVec.x < 0)
+			angle = 270;
+		else
+			angle = 90;
+		return ;
+	}
+
+	if (dirVec.x > 0)
+		angle = 90.0 + radToDegMultiplier * atan(dirVec.y / dirVec.x);
+	else
+		angle = 270.0 + radToDegMultiplier * atan(dirVec.y / dirVec.x);
+
+	// TEST END
+
+
+	// Small nudge to make it more realistic
+
+	coord.x += 10 * dirVec.x;
+	coord.y += 10 * dirVec.y;
 
 }
 
@@ -26,12 +60,10 @@ Arrow::Arrow(int initAngle, sf::Vector2f initCoord, sf::Texture &texture, sf::Ve
 	MOVE ARROWS
 */
 
-void	Arrow::moveArrow()
+void	Arrow::moveArrow(float dt)
 {
-	// make FPS independent !!
-
-	coord.x += ARROW_SPEED * dirVec.x;
-	coord.y += ARROW_SPEED * dirVec.y;
+	coord.x += arrowVel * dirVec.x * dt;
+	coord.y += arrowVel * dirVec.y * dt;
 }
 
 /*
@@ -61,4 +93,23 @@ sf::Vector2f	&Arrow::getDirVec()
 {
 	return (dirVec);
 }
+
+sf::Sprite		&Arrow::getSprite()
+{
+	return (sprite);
+}
+
+sf::Vector2f	Arrow::getArrowTipCoord()
+{
+	sf::Vector2f arrowTipCoord;
+
+	arrowTipCoord = coord;
+
+	arrowTipCoord.x += dirVec.x * (sprite.getLocalBounds().width / 2);
+	arrowTipCoord.y += dirVec.y * (sprite.getLocalBounds().height / 2);
+
+	return (arrowTipCoord);
+}
+
+
 

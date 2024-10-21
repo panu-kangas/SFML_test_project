@@ -68,6 +68,7 @@ class Map
 	sf::Vector2i		&getSnakeStartPos();
 	sf::Texture			&getWallTexture();
 	sf::Texture			&getGrassTexture();
+	mapTile				&getTileInfo(int x, int y);
 
 
 };

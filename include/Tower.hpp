@@ -40,12 +40,14 @@ class Tower
 	Tower(sf::Texture &towerText, sf::Texture *weaponTextArr, sf::Texture *arrowText, sf::Vector2f towerCoord);
 	~Tower() {};
 
-	void	drawTower(sf::RenderWindow &window, int &drawX, int &drawY, sf::Vector2f snakePos, float dt);
+	void	drawTower(sf::RenderWindow &window, int &drawX, int &drawY, sf::Vector2f snakePos, \
+	float dt, int gameState);
 
 	bool	isVisible(int *xDrawLimits, int *yDrawLimits);
 	bool	isSnakeVisible(sf::Vector2f snakeWorldCoord);
 
-	void	shootArrow(sf::Vector2f snakePos, std::vector<Arrow> &arrowVec, bool snakeMoveStat);
+	void	shootArrow(sf::Vector2f snakePos, std::vector<Arrow> &arrowVec, bool snakeMoveStat, \
+	int gameState);
 
 
 	void	setAngle(int newAngle);

@@ -15,6 +15,7 @@
 struct mapTile
 {
 	char	type; // 0 = grass, 1 = wall, C = Collectible
+	bool	isApple;
 
 	sf::Sprite	sprite;
 
@@ -36,7 +37,7 @@ class Map
 	sf::Texture towerWeaponText[2];
 	sf::Texture	arrowTexture;
 
-	sf::Vector2i snakeStartPos;
+	sf::Vector2f snakeStartPos;
 
 	std::vector<std::vector<mapTile>>	wholeMapVec;
 	std::vector<Tower>					towerVec;
@@ -56,7 +57,10 @@ class Map
 	~Map();
 
 	void	initMap(std::string filename);
-	void	drawMap(sf::RenderWindow &window, sf::Vector2f snakePos, int *xDrawLim, int *yDrawLim);
+	void	drawMap(sf::RenderWindow &window, sf::Vector2f snakePos, int *xDrawLim, \
+				int *yDrawLim, int gameState);
+
+	void	resetMap();
 
 
 	int		checkCollisions(Snake &snake);
@@ -65,7 +69,7 @@ class Map
 	int		getMapHeight();
 
 	std::vector<Tower>	*getTowerVec();
-	sf::Vector2i		&getSnakeStartPos();
+	sf::Vector2f		&getSnakeStartPos();
 	sf::Texture			&getWallTexture();
 	sf::Texture			&getGrassTexture();
 	mapTile				&getTileInfo(int x, int y);

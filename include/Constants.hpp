@@ -20,4 +20,12 @@
 # define GREEN "\033[32m"
 # define RESET "\033[0m"
 
+enum	states
+{
+	StartScreen,
+	SnakeStill,
+	SnakeMove,
+	GameOver
+};
+
 #endif

@@ -7,7 +7,7 @@
 GameHandler::GameHandler(sf::RenderWindow *gameWindow)
 {
 	window = gameWindow;
-	gameState = StartMenu;
+	gameState = StartScreen;
 	spaceReleased = true;
 }
 
@@ -31,8 +31,9 @@ void	GameHandler::initGame(std::string mapFile)
 	snakeStartInfo.initTextBox("fonts/pixel_font.ttf", 18);
 	snakeStartInfo.setBackground(sf::Vector2f(230, 18), snakeInfoPos, sf::Color::Black);
 
-	boostMeter.initTextBox("fonts/pixel_font.ttf", 18);
+	boostMeter.initTextBox("fonts/pixel_font.ttf", 14);
 	boostMeter.setBackground(sf::Vector2f(160, 32), sf::Vector2f(WINDOW_WIDTH / 2 - 80, 0), sf::Color::Black);
+	boostMeter.setText("BOOST METER", sf::Vector2f(WINDOW_WIDTH / 2 - 52, 0), sf::Color::White);
 }
 
 
@@ -42,7 +43,10 @@ void	GameHandler::initGame(std::string mapFile)
 
 void	GameHandler::updateGame(float dt)
 {
-	if (gameState == SnakeStill)
+
+	if (gameState == GameOver)
+		return ;
+	else if (gameState == SnakeStill)
 		snakeStartInfo.setText("Press W, A, S or D to start!", snakeInfoPos, sf::Color::Green);
 
 	snake.moveSnake(map.getMapWidth(), map.getMapHeight(), dt); // Should I have map height & width in Handler as private...?
@@ -55,20 +59,14 @@ void	GameHandler::updateGame(float dt)
 		temp.x /= TILE_SIZE;
 		temp.y /= TILE_SIZE;
 
-		if (map.getTileInfo(temp.x, temp.y).type == '1')
-			arrowVec.erase(arrowVec.begin() + i);
-
-		/*
-		Tried this to the if condition above:
-
+		if ((map.getTileInfo(temp.x, temp.y).type == '1'
 		|| map.getTileInfo(temp.x, temp.y).type == 'T'
 		|| map.getTileInfo(temp.x - 1, temp.y).type == 'T'
 		|| map.getTileInfo(temp.x, temp.y - 1).type == 'T'
-		|| map.getTileInfo(temp.x - 1, temp.y - 1).type == 'T'
+		|| map.getTileInfo(temp.x - 1, temp.y - 1).type == 'T')
+		&& !arrowVec[i].getHomeTower().contains(arrowVec[i].getCoord()))
+			arrowVec.erase(arrowVec.begin() + i);
 
-		It almost works, just need to somehow skip the "home tower", so that the arrow
-		doesn't stop immidiately :D
-		*/
 
 
 		// check that the above erase() is safe!!		
@@ -88,6 +86,9 @@ void	GameHandler::updateGame(float dt)
 
 void	GameHandler::checkCollision()
 {
+	if (gameState == GameOver)
+		return ;
+
 	int	tempFlag = map.checkCollisions(snake);
 
 	if (tempFlag == 2)
@@ -99,7 +100,6 @@ void	GameHandler::checkCollision()
 	if (tempFlag == 1)
 		gameState = GameOver;
 	
-
 }
 
 
@@ -137,7 +137,7 @@ void	GameHandler::drawGame(float dt)
 	setYLimits(snakePos);
 
 	// MAP
-	map.drawMap(*window, snake.getSnakeWorldCoord(), xDrawLimits, yDrawLimits);
+	map.drawMap(*window, snake.getSnakeWorldCoord(), xDrawLimits, yDrawLimits, gameState);
 
 	// TOWERS
 	towerVec = map.getTowerVec();
@@ -149,8 +149,19 @@ void	GameHandler::drawGame(float dt)
 		{
 				drawX =	temp.getPosInPixels().x - this->xDrawLimits[0];
 				drawY = temp.getPosInPixels().y - this->yDrawLimits[0];
-				temp.shootArrow(snakePos, arrowVec, snake.getStartMovingStatus());
-				temp.drawTower(*window, drawX, drawY, snake.getSnakeWorldCoord(), dt);
+				temp.shootArrow(snakePos, arrowVec, snake.getStartMovingStatus(), gameState);
+
+				// TEST
+
+				if (gameState == GameOver)
+				{
+					temp.getSprite().setColor(sf::Color::Red);
+					temp.getWeaponSprite().setColor(sf::Color::Red);
+				}
+
+				// TEST END
+
+				temp.drawTower(*window, drawX, drawY, snake.getSnakeWorldCoord(), dt, gameState);
 		}
 		else
 			temp.getSprite().setPosition(-10, -10); // is this needed...?
@@ -163,6 +174,9 @@ void	GameHandler::drawGame(float dt)
 		drawX =	temp.getCoord().x - this->xDrawLimits[0];
 		drawY = temp.getCoord().y - this->yDrawLimits[0];
 
+		if (gameState == GameOver)
+			temp.getSprite().setColor(sf::Color::Red);
+
 		if (drawX > 0 && drawX < map.getMapWidth() * TILE_SIZE \
 		&& drawY > 0 && drawY < map.getMapHeight() * TILE_SIZE)
 			temp.drawArrow(*window, drawX, drawY);
@@ -170,26 +184,36 @@ void	GameHandler::drawGame(float dt)
 	
 
 	// SNAKE
-	snake.drawSnake(*window);
+	snake.drawSnake(*window, gameState);
 
 	// SCOREBOARD
 	score.drawTextBox(*window);
 
-	// BOOST METER BG
-	boostMeter.drawTextBox(*window);
+	// Draw boost meter --> MAKE SEPARTE CLASS ???
 
-	// Draw boost meter --> MAKE SEPARTE CLASS
+	if (gameState == GameOver)
+	{
+		boostMeter.setText("GAME OVER", sf::Vector2f(WINDOW_WIDTH / 2 - 78, 0), sf::Color::Green);
+		boostMeter.setFontSize(25);
+		boostMeter.drawTextBox(*window);
+	}
+	else
+	{
+		// BOOST METER BG
+		boostMeter.drawTextBox(*window);
 
-	sf::RectangleShape	boost;
-	float				len;
-	float				origLen = 100;
+		sf::RectangleShape	boost;
+		float				len;
+		float				origLen = 100;
 
-	len = snake.getBoostCounter();
+		len = snake.getBoostCounter();
 
-	boost.setSize(sf::Vector2f(len, 10));
-	boost.setFillColor(sf::Color::Green);
-	boost.setPosition(sf::Vector2f(WINDOW_WIDTH / 2 - origLen / 2 + (origLen - len), 10));
-	window->draw(boost);
+		boost.setSize(sf::Vector2f(len, 10));
+		boost.setFillColor(sf::Color::Green);
+		boost.setPosition(sf::Vector2f(WINDOW_WIDTH / 2 - origLen / 2 + (origLen - len), 20));
+		window->draw(boost);
+	}
+
 
 
 	if (gameState == SnakeStill)
@@ -248,6 +272,32 @@ void	GameHandler::checkInput(sf::Event &event)
 		snake.changeDirection(event);
 
 }
+
+
+/*
+	RESET GAME
+*/
+
+
+void	GameHandler::resetGame()
+{
+	map.resetMap();
+	snake.resetSnake(map.getSnakeStartPos(), map.getMapWidth(), map.getMapHeight());
+	score.resetScore();
+	arrowVec.clear();
+
+	boostMeter.setText("BOOST METER", sf::Vector2f(WINDOW_WIDTH / 2 - 52, 0), sf::Color::White);
+	boostMeter.setFontSize(14);
+
+	for (Tower &temp : *towerVec)
+	{
+		temp.getSprite().setColor(sf::Color::White);
+		temp.getWeaponSprite().setColor(sf::Color::White);
+	}
+
+	gameState = StartScreen;
+}
+
 
 
 /*

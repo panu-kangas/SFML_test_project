@@ -17,6 +17,7 @@ class ScoreCounter : public TextBox
 	std::string	getScoreString();
 
 	void	addScore(int add);
+	void	resetScore();
 
 };
 

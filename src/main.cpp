@@ -22,26 +22,20 @@ int main(int argc, char *argv[])
 	sf::Clock	deltaClock;
 
 
+
     while (window.isOpen())
     {
-
-		if (game.getGameState() == 3) // how to get enum here...? Use global enum?
-		{
-			std::cout << "\033[31m" << "\nYOU LOSE!\n" << "\033[0m" << std::endl;
-			window.close();
-			break ;
-		}
-
+	
         for (auto event = sf::Event{}; window.pollEvent(event);)
         {
             if (event.type == sf::Event::Closed)
-            {
                 window.close();
-            }
 			else if (event.type == sf::Event::KeyPressed || event.type == sf::Event::KeyReleased)
 			{
-				if (game.getGameState() == 0) // how to get enum here...? Use global enum?
+				if (game.getGameState() == StartScreen) // how to get enum here...? Use global enum?
 					game.startMenuInput(event);
+				else if (game.getGameState() == GameOver && event.key.scancode == sf::Keyboard::Scan::Enter)
+					game.resetGame();
 				else
 					game.checkInput(event);
 
@@ -53,13 +47,10 @@ int main(int argc, char *argv[])
 		sf::Time dt = deltaClock.restart();
 
 
-        window.clear();
+       	window.clear();
 
-
-		if (game.getGameState() == 0) // how to get enum here...? Use global enum?
-		{
+		if (game.getGameState() == StartScreen)
 			game.displayStartMenu();
-		}
 		else
 		{
 			game.updateGame(dt.asSeconds());
@@ -67,76 +58,11 @@ int main(int argc, char *argv[])
 			game.drawGame(dt.asSeconds());
 		}
 
-        window.display();
+       	window.display();
+
     }
 
 	return (0);
 }
 
 
-
-
-
-
-// OLD VERSIONS
-
-
-
-/*
-	Class creation & initialization start
-*/
-
-/*
-	int	state = 0; // JUST A TEST
-	int collisionFlag;
-
-	Map		map;
-	map.initMap(argv[1]);
-
-	Snake	snake;
-	snake.Init(window, map.getSnakeStartPos(), map.getMapWidth(), map.getMapHeight());
-
-	ScoreCounter score;
-	score.initTextBox("fonts/pixel_font.ttf", 28);
-	score.setBackground(sf::Vector2f(112, 32), sf::Vector2f(0, 0), sf::Color::Black);
-
-	TextBox	snakeStartInfo;
-	sf::Vector2f	snakeInfoPos = snake.getSnakeSprite().getPosition();
-
-	snakeInfoPos.x -= 90;
-	snakeInfoPos.y -= 32;
-
-	snakeStartInfo.initTextBox("fonts/pixel_font.ttf", 18);
-	snakeStartInfo.setBackground(sf::Vector2f(230, 18), snakeInfoPos, sf::Color::Black);	
-
-	*/
-
-/*
-	Class creation & initialization end
-*/
-
-
-
-//	map.drawMap(window, snake);
-
-	//	snake.moveSnake(map.getMapWidth(), map.getMapHeight());
-	//	snake.drawSnake(window);
-
-	//	score.setText(score.getScoreString(), sf::Vector2f(10, 0), sf::Color::Green);
-	//	score.drawText(window);
-
-	/*	if (snake.getStartMovingStatus() == false)
-		{
-			snakeStartInfo.setText("Press W, A, S or D to start!", snakeInfoPos, sf::Color::Green);
-			snakeStartInfo.drawText(window);
-		}
-*/
-
-
-/*	collisionFlag = map.checkCollisions(snake);
-
-		if (collisionFlag == 1)
-			state = 1;
-		else if (collisionFlag == 2)
-			score.addScore(100);
-*/

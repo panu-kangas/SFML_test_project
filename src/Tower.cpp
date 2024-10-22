@@ -77,7 +77,8 @@ bool	Tower::isSnakeVisible(sf::Vector2f snakeWorldCoord)
 	SHOOTING ARROWS
 */
 
-void	Tower::shootArrow(sf::Vector2f snakePos, std::vector<Arrow> &arrowVec, bool snakeMoveStat)
+void	Tower::shootArrow(sf::Vector2f snakePos, std::vector<Arrow> &arrowVec, bool snakeMoveStat, \
+int gameState)
 {
 	if (this->isShooting == false || snakeMoveStat == false)
 	{
@@ -93,10 +94,13 @@ void	Tower::shootArrow(sf::Vector2f snakePos, std::vector<Arrow> &arrowVec, bool
 	else if (this->shootingClock.getElapsedTime().asSeconds() < 1.0)
 		return ;
 
-	this->weaponSprite.setTexture(this->weaponTextureArr[this->weaponAnimIterator]);
-	this->weaponAnimIterator++;
+	if (gameState != GameOver)
+	{
+		this->weaponSprite.setTexture(this->weaponTextureArr[this->weaponAnimIterator]);
+		this->weaponAnimIterator++;
+	}
 
-	if (weaponAnimIterator == 2) // this value might be something different
+	if (weaponAnimIterator == 2 && gameState != GameOver)
 	{
 		arrowVec.push_back(Arrow(getMiddlePosInPixels(), *arrowTexture, snakePos));
 		this->weaponAnimIterator = 0;
@@ -107,7 +111,8 @@ void	Tower::shootArrow(sf::Vector2f snakePos, std::vector<Arrow> &arrowVec, bool
 }
 
 
-void	Tower::drawTower(sf::RenderWindow &window, int &drawX, int &drawY, sf::Vector2f snakePos, float dt)
+void	Tower::drawTower(sf::RenderWindow &window, int &drawX, int &drawY, sf::Vector2f snakePos, \
+float dt, int gameState)
 {
 	towerSprite.setPosition(drawX, drawY);
 
@@ -116,12 +121,13 @@ void	Tower::drawTower(sf::RenderWindow &window, int &drawX, int &drawY, sf::Vect
 	if (isSnakeVisible(snakePos) == false)
 	{
 		setShootingFlag(false);
-		setIdleAngle(dt);
+		if (gameState != GameOver)
+			setIdleAngle(dt);
 	}
 	else
 	{
 		setShootingFlag(true);
-		if (weaponAnimIterator == 1)
+		if (weaponAnimIterator == 1 && gameState != GameOver)
 			setAttackAngle(snakePos);
 	}
 	
@@ -221,7 +227,7 @@ sf::Vector2f	Tower::getPosInPixels()
 sf::Vector2f	Tower::getMiddlePosInPixels()
 {
 	sf::Vector2f temp(towerCoord.x * TILE_SIZE + 32, towerCoord.y * TILE_SIZE + 17);
-
+		
 	return (temp);
 }
 

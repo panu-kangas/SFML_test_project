@@ -40,10 +40,13 @@ class Snake
 	Snake();
 	~Snake() {};
 
-	void	initSnake(sf::RenderWindow &window, sf::Vector2i startPos, int mapWidth, int mapHeight);
-	void	drawSnake(sf::RenderWindow &window);
+	void	initSnake(sf::RenderWindow &window, sf::Vector2f startPos, int mapWidth, int mapHeight);
+	void	drawSnake(sf::RenderWindow &window, int gameState);
 	void	moveSnake(int mapWidth, int mapHeight, float dt);
 	void	changeDirection(sf::Event &keypress);
+
+	void		resetSnake(sf::Vector2f startPos, int mapWidth, int mapHeight);
+
 
 	void		setSpeed(int newSpeed);
 	void		setBoostStatus(bool status);

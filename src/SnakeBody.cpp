@@ -17,7 +17,7 @@ SnakeBody::SnakeBody()
 	INIT
 */
 
-void	SnakeBody::InitBody(sf::RenderWindow &window, sf::Texture &bodyText, sf::Vector2i startPos, int num)
+void	SnakeBody::InitBody(sf::RenderWindow &window, sf::Texture &bodyText, sf::Vector2f startPos, int num)
 {
 	// sf::Vector2u windowSize = window.getSize();
 
@@ -129,6 +129,25 @@ void	SnakeBody::moveSnakeBody(int mapWidth, int mapHeight, sf::Vector2f snakeHea
 
 }
 
+/*
+	RESET BODY
+*/
+
+void	SnakeBody::resetBody(sf::Vector2f startPos)
+{
+	curDirection = -1;
+	moveSpeed = SNAKE_INIT_SPEED;
+	bodyWorldCoord.x = startPos.x * TILE_SIZE;
+	bodyWorldCoord.y = startPos.y * TILE_SIZE;
+	moveStartCounter = -2;
+
+	bodySprite.setPosition(-100, -100);
+
+	turnPointVec.clear();
+	newDirVec.clear();
+}
+
+
 
 bool	SnakeBody::checkTurningPoint()
 {
@@ -200,6 +219,7 @@ void	SnakeBody::setPrevBody(SnakeBody *prev)
 {
 	prevBody = prev;
 }
+
 
 
 void	SnakeBody::addTurn(int direction, sf::Vector2i turnPoint)

@@ -33,15 +33,7 @@ class GameHandler
 	std::vector<Arrow>	arrowVec;
 
 
-	// 0 = start screen (NOT DONE), 1 = snake still, 2 = start, 3 = game over
-	int		gameState;
-
-	enum	states{
-		StartMenu,
-		SnakeStill,
-		SnakeMove,
-		GameOver
-	};
+	int			gameState;
 
 	bool		spaceReleased;
 
@@ -71,6 +63,8 @@ class GameHandler
 
 	void	displayStartMenu();
 	void	startMenuInput(sf::Event &event);
+
+	void	resetGame();
 
 	void	checkInput(sf::Event &event);
 

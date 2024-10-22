@@ -27,6 +27,10 @@ class TextBox
 	void	setText(std::string text, sf::Vector2f position, sf::Color color);
 	void	drawTextBox(sf::RenderWindow &window);
 
+	void	setFontSize(unsigned int newSize);
+
+	sf::Vector2f	getSize();
+
 };
 
 #endif

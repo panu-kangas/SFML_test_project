@@ -4,8 +4,8 @@
 
 Snake::Snake()
 {
-	this->curDirection = 0;
-	this->newDirection = 0;
+	this->curDirection = -1;
+	this->newDirection = -1;
 	this->moveSpeed = SNAKE_INIT_SPEED;
 	this->bodyCount = 3;
 	this->startMoving = false;
@@ -19,7 +19,7 @@ Snake::Snake()
 // Functionalities
 
 
-void	Snake::initSnake(sf::RenderWindow &window, sf::Vector2i startPos, int mapWidth, int mapHeight)
+void	Snake::initSnake(sf::RenderWindow &window, sf::Vector2f startPos, int mapWidth, int mapHeight)
 {
 	if (!this->snakeHeadTexture.loadFromFile("sprites/snake_head.png") \
 	|| !this->bodyTexture.loadFromFile("sprites/snake_body.png"))
@@ -57,8 +57,15 @@ void	Snake::initSnake(sf::RenderWindow &window, sf::Vector2i startPos, int mapWi
 
 }
 
-void	Snake::drawSnake(sf::RenderWindow &window)
+void	Snake::drawSnake(sf::RenderWindow &window, int gameState)
 {
+	if (gameState == GameOver)
+	{
+		snakeHeadSprite.setColor(sf::Color::Red);
+		for (SnakeBody &temp : bodyVec)
+			temp.getSprite().setColor(sf::Color::Red);
+	}
+
 	for (int i = 0; i < this->bodyCount; i++)
 		this->bodyVec[i].drawSnakeBody(window);
 
@@ -207,6 +214,31 @@ void	Snake::setBoostStatus(bool status)
 {
 	isBoosting = status;
 }
+
+void	Snake::resetSnake(sf::Vector2f startPos, int mapWidth, int mapHeight)
+{
+	curDirection = -1;
+	newDirection = -1;
+	moveSpeed = SNAKE_INIT_SPEED;
+	bodyCount = 3;
+	startMoving = false;
+	isBoosting = false;
+	bodyReady = false;
+	boostCounter = BOOST_MAX;
+
+	snakeWorldCoord.x = startPos.x * TILE_SIZE;
+	snakeWorldCoord.y = startPos.y * TILE_SIZE;
+	setSpritePosition(mapWidth, mapHeight);
+
+	for (SnakeBody &temp : bodyVec)
+	{
+		temp.resetBody(startPos);
+		temp.getSprite().setColor(sf::Color::White);
+	}
+
+	snakeHeadSprite.setColor(sf::Color::White);
+}
+
 
 
 

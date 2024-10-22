@@ -9,3 +9,8 @@ void	ScoreCounter::addScore(int add)
 {
 	this->score += add;
 }
+
+void	ScoreCounter::resetScore()
+{
+	score = 0;
+}

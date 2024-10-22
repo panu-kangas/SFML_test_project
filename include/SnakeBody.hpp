@@ -33,14 +33,17 @@ class SnakeBody
 	SnakeBody();
 	~SnakeBody() {};
 
-	void	InitBody(sf::RenderWindow &window, sf::Texture &bodyText, sf::Vector2i startPos, int num);
+	void	InitBody(sf::RenderWindow &window, sf::Texture &bodyText, sf::Vector2f startPos, int num);
 	void	drawSnakeBody(sf::RenderWindow &window);
 	void	moveSnakeBody(int mapWidth, int mapHeight, sf::Vector2f snakeHeadPos, float dt);
+
+	void	resetBody(sf::Vector2f startPos);
 
 	void	addTurn(int direction, sf::Vector2i turnPoint);
 	void	setSpeed(int newSpeed);
 	void	setNextBody(SnakeBody *next);
 	void	setPrevBody(SnakeBody *prev);
+
 	bool	checkTurningPoint();
 
 	sf::Sprite		&getSprite();

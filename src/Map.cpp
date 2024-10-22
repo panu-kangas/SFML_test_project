@@ -136,6 +136,11 @@ void	Map::setWholeMapVec(std::string mapStr, int rowLen)
 
 		tile.type = mapStr[i];
 
+		if (tile.type == 'C')
+			tile.isApple = true;
+		else
+			tile.isApple = false;
+
 		if (tile.type == '1')
 			tile.sprite.setTexture(this->wallTexture);
 		else if (tile.type == '0' || tile.type == 'C' || tile.type == 'S' || tile.type == 'T')
@@ -156,7 +161,8 @@ void	Map::setWholeMapVec(std::string mapStr, int rowLen)
 
 // Drawing
 
-void	Map::drawMap(sf::RenderWindow &window, sf::Vector2f snakePos, int *xDrawLim, int *yDrawLim)
+void	Map::drawMap(sf::RenderWindow &window, sf::Vector2f snakePos, int *xDrawLim, \
+int *yDrawLim, int gameState)
 {
 	bool	sideWallOnScreen = false;
 	bool	topBottomWallOnScreen = false;
@@ -189,9 +195,20 @@ void	Map::drawMap(sf::RenderWindow &window, sf::Vector2f snakePos, int *xDrawLim
 		for (int x = xDrawLim[0] / TILE_SIZE; x < xDrawLim[1] / TILE_SIZE; ++x)
 		{	
 			wholeMapVec[y][x].sprite.setPosition(windowX, windowY);
+
+			// TEST
+			
+			if (gameState == GameOver)
+				wholeMapVec[y][x].sprite.setColor(sf::Color::Red);
+			else if (gameState == SnakeStill)
+				wholeMapVec[y][x].sprite.setColor(sf::Color::White);
+
+
+			// TEST END
+
 			window.draw(wholeMapVec[y][x].sprite);
 
-			if (wholeMapVec[y][x].type == 'C')
+			if (wholeMapVec[y][x].isApple == true)
 			{
 				wholeMapVec[y][x].sprite.setTexture(this->appleTexture);
 				window.draw(wholeMapVec[y][x].sprite);
@@ -204,6 +221,26 @@ void	Map::drawMap(sf::RenderWindow &window, sf::Vector2f snakePos, int *xDrawLim
 	}
 	
 }
+
+
+/*
+	RESET MAP
+*/
+
+void	Map::resetMap()
+{
+	for (int y = 0; y < mapHeight; ++y)
+	{
+		for (int x = 0; x < mapWidth; ++x)
+		{
+			if (wholeMapVec[y][x].type == 'C')
+				wholeMapVec[y][x].isApple = true;
+
+			wholeMapVec[y][x].sprite.setColor(sf::Color::White);
+		}
+	}
+}
+
 
 
 
@@ -231,11 +268,11 @@ int		Map::checkCollisions(Snake &snake)
 					if (wholeMapVec[y][x].sprite.getGlobalBounds().intersects(snakeSprite.getGlobalBounds()))
 						return (1);
 				}
-				else if (wholeMapVec[y][x].type == 'C')
+				else if (wholeMapVec[y][x].isApple == true)
 				{
 					if (wholeMapVec[y][x].sprite.getGlobalBounds().intersects(snakeSprite.getGlobalBounds()))
 					{
-						wholeMapVec[y][x].type = '0';
+						wholeMapVec[y][x].isApple = false;
 						return (2);
 					}
 				}
@@ -269,7 +306,7 @@ int		Map::checkTowerCollision(Snake &snake, sf::Vector2i snakeTileCoord)
 */
 
 
-sf::Vector2i &Map::getSnakeStartPos()
+sf::Vector2f &Map::getSnakeStartPos()
 {
 	return (this->snakeStartPos);
 }

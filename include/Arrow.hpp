@@ -17,6 +17,8 @@ class Arrow
 	sf::Vector2f	dirVec;
 	sf::Sprite		sprite;
 
+	sf::FloatRect	homeTower;
+
 	float			arrowVel;
 
 	public:
@@ -34,6 +36,7 @@ class Arrow
 	sf::Vector2f	getArrowTipCoord();
 	sf::Vector2f	&getDirVec();
 	sf::Sprite		&getSprite();
+	sf::FloatRect	&getHomeTower();
 
 
 };

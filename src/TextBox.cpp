@@ -36,3 +36,21 @@ void	TextBox::drawTextBox(sf::RenderWindow &window)
 	window.draw(this->boxText);
 }
 
+
+/*
+	UTILS
+*/
+
+void	TextBox::setFontSize(unsigned int newSize)
+{
+	this->boxText.setCharacterSize(newSize);
+
+}
+
+sf::Vector2f	TextBox::getSize()
+{
+	return (boxBackground.getSize());
+}
+
+
+

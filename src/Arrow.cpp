@@ -4,6 +4,8 @@
 Arrow::Arrow(sf::Vector2f initCoord, sf::Texture &texture, sf::Vector2f snakePos) : arrowVel(140.0)
 {
 	coord = initCoord;
+	
+	homeTower = sf::FloatRect({coord.x - 32, coord.y - 17}, {64, 64});
 
 	float	len;
 
@@ -110,6 +112,12 @@ sf::Vector2f	Arrow::getArrowTipCoord()
 
 	return (arrowTipCoord);
 }
+
+sf::FloatRect	&Arrow::getHomeTower()
+{
+	return (homeTower);
+}
+
 
 
 

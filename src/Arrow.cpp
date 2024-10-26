@@ -1,4 +1,5 @@
 #include "Arrow.hpp"
+#include <math.h>
 
 
 Arrow::Arrow(sf::Vector2f initCoord, sf::Texture &texture, sf::Vector2f snakePos) : arrowVel(220.0)

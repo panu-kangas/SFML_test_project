@@ -1,4 +1,5 @@
 #include "Tower.hpp"
+#include "Map.hpp"
 
 
 // Constructor
@@ -17,6 +18,7 @@ Tower::Tower(sf::Texture &towerText, sf::Texture *weaponTextArr, sf::Texture *ar
 	this->arrowTexture = arrowText;
 
 	this->towerSprite.setTexture(towerText);
+	towerSprite.setPosition(-100, -100);
 	this->weaponSprite.setTexture(weaponTextArr[0]);
 	this->weaponSprite.setOrigin(this->weaponSprite.getLocalBounds().width / 2, this->weaponSprite.getLocalBounds().height / 2);
 
@@ -59,17 +61,56 @@ bool	Tower::isVisible(int *xDrawLimits, int *yDrawLimits)
 }
 
 
-bool	Tower::isSnakeVisible(sf::Vector2f snakeWorldCoord)
+bool	Tower::isSnakeVisible(sf::Vector2f snakeCoord, Map &map)
 {
 	// 64 is tower width & height
 
-	if (snakeWorldCoord.x > ((this->towerCoord.x * TILE_SIZE) - this->attackRadius) \
-	&& snakeWorldCoord.x < ((this->towerCoord.x * TILE_SIZE) + 64 + this->attackRadius) \
-	&& snakeWorldCoord.y > ((this->towerCoord.y * TILE_SIZE) - this->attackRadius) \
-	&& snakeWorldCoord.y < ((this->towerCoord.y * TILE_SIZE) + 64 + this->attackRadius))
+	if (snakeCoord.x > ((this->towerCoord.x * TILE_SIZE) - this->attackRadius) \
+	&& snakeCoord.x < ((this->towerCoord.x * TILE_SIZE) + 64 + this->attackRadius) \
+	&& snakeCoord.y > ((this->towerCoord.y * TILE_SIZE) - this->attackRadius) \
+	&& snakeCoord.y < ((this->towerCoord.y * TILE_SIZE) + 64 + this->attackRadius) \
+	&& checkForWall(snakeCoord, map) == false)
 		return (true);
 	else
 		return (false);
+}
+
+bool	Tower::checkForWall(sf::Vector2f snakeCoord, Map &map)
+{
+	sf::Vector2f	dirVec;
+	sf::Vector2f	towerPxCoord;
+	float			len;
+	int				x;
+	int				y;
+
+	towerPxCoord.x = towerCoord.x * TILE_SIZE;
+	towerPxCoord.y = towerCoord.y * TILE_SIZE;
+
+	dirVec.x = (snakeCoord.x + TILE_SIZE / 2) - towerPxCoord.x;
+	dirVec.y = (snakeCoord.y + TILE_SIZE / 2) - towerPxCoord.y;
+
+	len = sqrtf(powf(dirVec.x, 2) + powf(dirVec.y, 2));
+
+	dirVec.x = dirVec.x / len;
+	dirVec.y = dirVec.y / len;
+
+	while (1)
+	{
+		towerPxCoord.x += dirVec.x * 5; // 5 is just a test
+		towerPxCoord.y += dirVec.y * 5; // 5 is just a test
+
+		if (towerPxCoord.x > snakeCoord.x && towerPxCoord.x < snakeCoord.x + TILE_SIZE \
+		&& towerPxCoord.y > snakeCoord.y && towerPxCoord.y < snakeCoord.y + TILE_SIZE)
+			return (false);
+
+		x = towerPxCoord.x / TILE_SIZE;
+		y = towerPxCoord.y / TILE_SIZE;
+
+		if (map.getTileInfo(x, y).type == '1')
+			break ;
+	}
+
+	return (true);
 }
 
 
@@ -94,13 +135,13 @@ int gameState)
 	else if (this->shootingClock.getElapsedTime().asSeconds() < 1.0)
 		return ;
 
-	if (gameState != GameOver)
+	if (gameState != GameOver && gameState != Win)
 	{
 		this->weaponSprite.setTexture(this->weaponTextureArr[this->weaponAnimIterator]);
 		this->weaponAnimIterator++;
 	}
 
-	if (weaponAnimIterator == 2 && gameState != GameOver)
+	if (weaponAnimIterator == 2 && gameState != GameOver && gameState != Win)
 	{
 		arrowVec.push_back(Arrow(getMiddlePosInPixels(), *arrowTexture, snakePos));
 		this->weaponAnimIterator = 0;
@@ -112,23 +153,23 @@ int gameState)
 
 
 void	Tower::drawTower(sf::RenderWindow &window, int &drawX, int &drawY, sf::Vector2f snakePos, \
-float dt, int gameState)
+float dt, int gameState, Map &map)
 {
 	towerSprite.setPosition(drawX, drawY);
 
 	weaponSprite.setPosition(drawX + 32, drawY + 17); // make universal...?
 			
-	if (isSnakeVisible(snakePos) == false)
+	if (isSnakeVisible(snakePos, map) == true)
 	{
-		setShootingFlag(false);
-		if (gameState != GameOver)
-			setIdleAngle(dt);
+		setShootingFlag(true);
+		if (weaponAnimIterator == 1 && gameState != GameOver && gameState != Win)
+			setAttackAngle(snakePos);
 	}
 	else
 	{
-		setShootingFlag(true);
-		if (weaponAnimIterator == 1 && gameState != GameOver)
-			setAttackAngle(snakePos);
+		setShootingFlag(false);
+		if (gameState != GameOver && gameState != Win)
+			setIdleAngle(dt);
 	}
 	
 	weaponSprite.setRotation(weaponAngle);

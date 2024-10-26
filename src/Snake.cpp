@@ -225,7 +225,10 @@ void	Snake::resetSnake(sf::Vector2f startPos, int mapWidth, int mapHeight)
 	isBoosting = false;
 	bodyReady = false;
 	boostCounter = BOOST_MAX;
+	snakeHeadSprite.setColor(sf::Color::White);
+	bodyVec.clear();
 
+/*
 	snakeWorldCoord.x = startPos.x * TILE_SIZE;
 	snakeWorldCoord.y = startPos.y * TILE_SIZE;
 	setSpritePosition(mapWidth, mapHeight);
@@ -235,8 +238,8 @@ void	Snake::resetSnake(sf::Vector2f startPos, int mapWidth, int mapHeight)
 		temp.resetBody(startPos);
 		temp.getSprite().setColor(sf::Color::White);
 	}
+*/
 
-	snakeHeadSprite.setColor(sf::Color::White);
 }
 
 

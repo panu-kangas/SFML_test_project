@@ -9,12 +9,12 @@
 
 # define VALID_MAP_CHAR	"01SCT"
 
-# define SNAKE_INIT_SPEED	110
-# define SNAKE_BOOST_SPEED	180
+# define SNAKE_INIT_SPEED	150
+# define SNAKE_BOOST_SPEED	220
 
 # define BOOST_MAX			100
 # define BOOST_REDUCE		70
-# define BOOST_REPLENISH	10
+# define BOOST_REPLENISH	15
 
 # define RED "\033[31m"
 # define GREEN "\033[32m"
@@ -23,9 +23,11 @@
 enum	states
 {
 	StartScreen,
+	LevelScreen,
 	SnakeStill,
 	SnakeMove,
-	GameOver
+	GameOver,
+	Win,
 };
 
 #endif

@@ -1,16 +1,39 @@
 #include "ScoreCounter.hpp"
 
+
+ScoreCounter::ScoreCounter()
+{
+	info.initTextBox("fonts/pixel_font.ttf", 14);
+	info.setBackground(sf::Vector2f(112, 32), sf::Vector2f(0, 0), sf::Color::Transparent);
+	info.setText("APPLES\nLEFT:", {10, 0}, sf::Color::White);
+
+}
+
+
+
 std::string	ScoreCounter::getScoreString()
 {
-	return (std::to_string(this->score));
+	return (std::to_string(appleCount));
 }
 
-void	ScoreCounter::addScore(int add)
+bool	ScoreCounter::decrementCounter()
 {
-	this->score += add;
+	appleCount--;
+
+	if (appleCount == 0)
+		return (true);
+	else
+		return (false);
 }
 
-void	ScoreCounter::resetScore()
+void	ScoreCounter::setCounter(int appleTotal)
 {
-	score = 0;
+	appleCount = appleTotal;
 }
+
+void	ScoreCounter::drawScore(sf::RenderWindow &window)
+{
+	this->drawTextBox(window);
+	info.drawTextBox(window);
+}
+

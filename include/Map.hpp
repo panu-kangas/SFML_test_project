@@ -8,7 +8,8 @@
 
 # include "Constants.hpp"
 # include "Snake.hpp"
-# include "Tower.hpp"
+
+class Tower;
 
 //////////
 
@@ -29,6 +30,7 @@ class Map
 
 	int	mapWidth;
 	int	mapHeight;
+	int	appleCount;
 
 	sf::Texture	wallTexture;
 	sf::Texture	grassTexture;
@@ -47,7 +49,6 @@ class Map
 	void	setWholeMapVec(std::string mapStr, int rowLen);
 	void	setSnakeAndTowerPos();
 
-//	void	drawTowers(sf::RenderWindow &window, sf::Vector2f snakePos); // --> Move to GameHandler
 	int		checkTowerCollision(Snake &snake, sf::Vector2i snakeTileCoord);
 
 
@@ -73,6 +74,8 @@ class Map
 	sf::Texture			&getWallTexture();
 	sf::Texture			&getGrassTexture();
 	mapTile				&getTileInfo(int x, int y);
+	int					getAppleCount();
+
 
 
 };

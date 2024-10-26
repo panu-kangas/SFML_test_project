@@ -8,7 +8,7 @@
 # include "Constants.hpp"
 # include "Arrow.hpp"
 
-
+class Map;
 
 class Tower
 {
@@ -34,6 +34,8 @@ class Tower
 	bool			isShooting;
 	int				weaponAnimIterator;
 
+	bool	checkForWall(sf::Vector2f snakeCoord, Map &map);
+
 
 	public:
 
@@ -41,10 +43,10 @@ class Tower
 	~Tower() {};
 
 	void	drawTower(sf::RenderWindow &window, int &drawX, int &drawY, sf::Vector2f snakePos, \
-	float dt, int gameState);
+	float dt, int gameState, Map &map);
 
 	bool	isVisible(int *xDrawLimits, int *yDrawLimits);
-	bool	isSnakeVisible(sf::Vector2f snakeWorldCoord);
+	bool	isSnakeVisible(sf::Vector2f snakeWorldCoord, Map &map);
 
 	void	shootArrow(sf::Vector2f snakePos, std::vector<Arrow> &arrowVec, bool snakeMoveStat, \
 	int gameState);

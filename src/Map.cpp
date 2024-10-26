@@ -1,21 +1,9 @@
 #include "Map.hpp"
+#include "Tower.hpp"
 
 // Constructor && Destructor
 
 Map::Map()
-{
-	// std::cout << "Map got created" << std::endl;
-}
-
-Map::~Map()
-{
-	// std::cout << "Map got destroyed" << std::endl;
-}
-
-
-// Initialization
-
-void	Map::initMap(std::string filename)
 {
 	if (!this->wallTexture.loadFromFile("sprites/wall.png") \
 	|| !this->grassTexture.loadFromFile("sprites/grass.png") \
@@ -28,6 +16,22 @@ void	Map::initMap(std::string filename)
 		std::cerr << "\nTexture loading failed. Exiting program!\n" << std::endl;
 		exit (1);
 	};
+	
+	appleCount = 0;
+	mapWidth = 0;
+	mapHeight = 0;
+}
+
+Map::~Map()
+{
+}
+
+
+// Initialization
+
+void	Map::initMap(std::string filename)
+{
+	// CHECK THIS 
 
 	readMapInfo(filename);
 }
@@ -75,6 +79,13 @@ void	Map::readMapInfo(std::string filename)
 	this->mapWidth = rowLen;
 	this->mapHeight = mapHeightCounter;
 
+	if (mapWidth < 33 || mapHeight < 23)
+	{
+		std::cerr << RED << "\nMap-file error: map too small. Minimum width is 33 tiles, minimum height is 23 tiles.\n"
+		<< "Exiting program.\n" << RESET << std::endl;
+		exit (1);
+	}
+
 	this->setWholeMapVec(mapStr, rowLen);
 	this->setSnakeAndTowerPos();
 }
@@ -114,7 +125,8 @@ void	Map::checkValidMap(std::string mapStr, int rowLen)
 	}
 
 	// I might need some extra checks here...? 
-	// Example: player is totally blocked by walls etc
+	// 1. No Towers next to each other
+	// 2. No snake close to tower
 }
 
 
@@ -137,7 +149,10 @@ void	Map::setWholeMapVec(std::string mapStr, int rowLen)
 		tile.type = mapStr[i];
 
 		if (tile.type == 'C')
+		{
+			appleCount++;
 			tile.isApple = true;
+		}
 		else
 			tile.isApple = false;
 
@@ -196,15 +211,9 @@ int *yDrawLim, int gameState)
 		{	
 			wholeMapVec[y][x].sprite.setPosition(windowX, windowY);
 
-			// TEST
-			
+			// End screen coloring
 			if (gameState == GameOver)
 				wholeMapVec[y][x].sprite.setColor(sf::Color::Red);
-			else if (gameState == SnakeStill)
-				wholeMapVec[y][x].sprite.setColor(sf::Color::White);
-
-
-			// TEST END
 
 			window.draw(wholeMapVec[y][x].sprite);
 
@@ -229,16 +238,9 @@ int *yDrawLim, int gameState)
 
 void	Map::resetMap()
 {
-	for (int y = 0; y < mapHeight; ++y)
-	{
-		for (int x = 0; x < mapWidth; ++x)
-		{
-			if (wholeMapVec[y][x].type == 'C')
-				wholeMapVec[y][x].isApple = true;
-
-			wholeMapVec[y][x].sprite.setColor(sf::Color::White);
-		}
-	}
+	appleCount = 0;
+	towerVec.clear();
+	wholeMapVec.clear();
 }
 
 
@@ -291,9 +293,7 @@ int		Map::checkTowerCollision(Snake &snake, sf::Vector2i snakeTileCoord)
 {
 	for (int i = 0; i < this->towerVec.size(); i++)
 	{
-		// should I initialize all towers to -10 in the beginning...?
-
-		if (this->towerVec[i].getSprite().getPosition().x != -10 \
+		if (this->towerVec[i].getSprite().getPosition().x != -100 \
 		&& this->towerVec[i].getSprite().getGlobalBounds().intersects(snake.getSnakeSprite().getGlobalBounds()))
 			return (1);
 	}
@@ -340,6 +340,12 @@ mapTile		&Map::getTileInfo(int x, int y)
 {
 	return (wholeMapVec[y][x]);
 }
+
+int			Map::getAppleCount()
+{
+	return (appleCount);
+}
+
 
 
 

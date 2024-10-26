@@ -9,6 +9,7 @@ GameHandler::GameHandler(sf::RenderWindow *gameWindow)
 	window = gameWindow;
 	gameState = StartScreen;
 	spaceReleased = true;
+	customMap = false;
 }
 
 
@@ -22,7 +23,8 @@ void	GameHandler::initGame(std::string mapFile)
 	snake.initSnake(*window, map.getSnakeStartPos(), map.getMapWidth(), map.getMapHeight());
 	
 	score.initTextBox("fonts/pixel_font.ttf", 28);
-	score.setBackground(sf::Vector2f(112, 32), sf::Vector2f(0, 0), sf::Color::Black);
+	score.setBackground(sf::Vector2f(146, 32), sf::Vector2f(0, 0), sf::Color::Black);
+	score.setCounter(map.getAppleCount());
 
 	snakeInfoPos = snake.getSnakeSprite().getPosition();
 	snakeInfoPos.x -= 90;
@@ -34,6 +36,10 @@ void	GameHandler::initGame(std::string mapFile)
 	boostMeter.initTextBox("fonts/pixel_font.ttf", 14);
 	boostMeter.setBackground(sf::Vector2f(160, 32), sf::Vector2f(WINDOW_WIDTH / 2 - 80, 0), sf::Color::Black);
 	boostMeter.setText("BOOST METER", sf::Vector2f(WINDOW_WIDTH / 2 - 52, 0), sf::Color::White);
+
+	endInfo.initTextBox("fonts/pixel_font.ttf", 14);
+	endInfo.setBackground(sf::Vector2f(160, 32), sf::Vector2f(WINDOW_WIDTH - 160, 0), sf::Color::Black);
+	endInfo.setText("Enter - Return to menu\nESC - Exit game", sf::Vector2f(WINDOW_WIDTH - 160, 0), sf::Color::Green);
 }
 
 
@@ -43,8 +49,7 @@ void	GameHandler::initGame(std::string mapFile)
 
 void	GameHandler::updateGame(float dt)
 {
-
-	if (gameState == GameOver)
+	if (gameState == GameOver || gameState == Win)
 		return ;
 	else if (gameState == SnakeStill)
 		snakeStartInfo.setText("Press W, A, S or D to start!", snakeInfoPos, sf::Color::Green);
@@ -68,14 +73,13 @@ void	GameHandler::updateGame(float dt)
 			arrowVec.erase(arrowVec.begin() + i);
 
 
-
 		// check that the above erase() is safe!!		
 	}
 	
 	if (snake.getStartMovingStatus() == true)
 		gameState = SnakeMove;
 
-	score.setText(score.getScoreString(), sf::Vector2f(10, 0), sf::Color::Green);
+	score.setText(score.getScoreString(), sf::Vector2f(80, 0), sf::Color::Green);
 
 }
 
@@ -86,13 +90,17 @@ void	GameHandler::updateGame(float dt)
 
 void	GameHandler::checkCollision()
 {
-	if (gameState == GameOver)
+	if (gameState == GameOver || gameState == Win)
 		return ;
 
 	int	tempFlag = map.checkCollisions(snake);
 
 	if (tempFlag == 2)
-		score.addScore(100);
+	{
+		if (score.decrementCounter() == true)
+			gameState = Win;
+		score.setText(score.getScoreString(), sf::Vector2f(80, 0), sf::Color::Green);
+	}
 
 	if (tempFlag == 0 || tempFlag == 2)
 		tempFlag = checkArrowCollision();
@@ -107,18 +115,21 @@ int		GameHandler::checkArrowCollision()
 {
 	sf::Sprite &snakeSprite = snake.getSnakeSprite();
 	std::vector<SnakeBody> &bodyVec = snake.getBodyVec();
+	float snakeX = snake.getSnakeWorldCoord().x;
+	float snakeY = snake.getSnakeWorldCoord().y;
 
-	for (Arrow &temp : arrowVec)
-	{
-		if (temp.getSprite().getGlobalBounds().intersects(snakeSprite.getGlobalBounds()))
+	for (Arrow &arrow : arrowVec)
+	{	
+		if (arrow.getArrowTipCoord().x > snakeX && arrow.getArrowTipCoord().x < snakeX + TILE_SIZE \
+		&& arrow.getArrowTipCoord().y > snakeY && arrow.getArrowTipCoord().y < snakeY + TILE_SIZE)
 			return (1);
 		
-		for (SnakeBody &tempBody : bodyVec)
+		for (SnakeBody &body : bodyVec)
 		{
-			if (temp.getSprite().getGlobalBounds().intersects(tempBody.getSprite().getGlobalBounds()))
+			if (arrow.getArrowTipCoord().x > body.getBodyCoord().x && arrow.getArrowTipCoord().x < body.getBodyCoord().x + TILE_SIZE \
+			&& arrow.getArrowTipCoord().y > body.getBodyCoord().y && arrow.getArrowTipCoord().y < body.getBodyCoord().y + TILE_SIZE)
 				return (1);
 		}
-
 	}
 
 	return (0);
@@ -147,24 +158,20 @@ void	GameHandler::drawGame(float dt)
 	{
 		if (temp.isVisible(xDrawLimits, yDrawLimits) == true)
 		{
-				drawX =	temp.getPosInPixels().x - this->xDrawLimits[0];
-				drawY = temp.getPosInPixels().y - this->yDrawLimits[0];
-				temp.shootArrow(snakePos, arrowVec, snake.getStartMovingStatus(), gameState);
+			drawX =	temp.getPosInPixels().x - this->xDrawLimits[0];
+			drawY = temp.getPosInPixels().y - this->yDrawLimits[0];
+			temp.shootArrow(snakePos, arrowVec, snake.getStartMovingStatus(), gameState);
 
-				// TEST
-
-				if (gameState == GameOver)
-				{
-					temp.getSprite().setColor(sf::Color::Red);
-					temp.getWeaponSprite().setColor(sf::Color::Red);
-				}
-
-				// TEST END
-
-				temp.drawTower(*window, drawX, drawY, snake.getSnakeWorldCoord(), dt, gameState);
+			// game over -screen coloring
+			if (gameState == GameOver)
+			{
+				temp.getSprite().setColor(sf::Color::Red);
+				temp.getWeaponSprite().setColor(sf::Color::Red);
+			}
+			temp.drawTower(*window, drawX, drawY, snake.getSnakeWorldCoord(), dt, gameState, map);
 		}
 		else
-			temp.getSprite().setPosition(-10, -10); // is this needed...?
+			temp.getSprite().setPosition(-100, -100); // is this needed...?
 	}
 
 	// ARROWS
@@ -180,20 +187,23 @@ void	GameHandler::drawGame(float dt)
 		if (drawX > 0 && drawX < map.getMapWidth() * TILE_SIZE \
 		&& drawY > 0 && drawY < map.getMapHeight() * TILE_SIZE)
 			temp.drawArrow(*window, drawX, drawY);
+
 	}
 	
-
 	// SNAKE
 	snake.drawSnake(*window, gameState);
 
 	// SCOREBOARD
-	score.drawTextBox(*window);
+	score.drawScore(*window);
 
 	// Draw boost meter --> MAKE SEPARTE CLASS ???
 
-	if (gameState == GameOver)
+	if (gameState == GameOver || gameState == Win)
 	{
-		boostMeter.setText("GAME OVER", sf::Vector2f(WINDOW_WIDTH / 2 - 78, 0), sf::Color::Green);
+		if (gameState == GameOver)
+			boostMeter.setText("GAME OVER", sf::Vector2f(WINDOW_WIDTH / 2 - 78, 0), sf::Color::Green);
+		else
+			boostMeter.setText("!! YOU WIN !!", sf::Vector2f(WINDOW_WIDTH / 2 - 71, 0), sf::Color::Green);
 		boostMeter.setFontSize(25);
 		boostMeter.drawTextBox(*window);
 	}
@@ -218,6 +228,8 @@ void	GameHandler::drawGame(float dt)
 
 	if (gameState == SnakeStill)
 		snakeStartInfo.drawTextBox(*window);
+	else if (gameState == GameOver || gameState == Win)
+		endInfo.drawTextBox(*window);
 
 }
 
@@ -225,7 +237,7 @@ void	GameHandler::drawGame(float dt)
 	START MENU INPUT
 */
 
-void	GameHandler::startMenuInput(sf::Event &event)
+void	GameHandler::startMenuInput(sf::Event &event, char *argMap)
 {
 	if (event.type == sf::Event::KeyReleased)
 		return ;
@@ -236,14 +248,61 @@ void	GameHandler::startMenuInput(sf::Event &event)
 		startmenu.incrementSelector();
 	else if (event.key.code == sf::Keyboard::Key::Enter)
 	{
-		if (startmenu.getSelector() == 0)
+		if (customMap == true && startmenu.getSelector() == 0)
+		{
+			initGame(argMap);
 			gameState = SnakeStill;
+		}
+		else if (startmenu.getSelector() == 0)
+		{
+			gameState = LevelScreen;
+			startmenu.setLevelScreenState(true);
+		}
 		else
 		{
 			std::cout << "\033[31m" 
-			<< "\nWell... you could have at least tried the game! =(\n" << "\033[0m" << std::endl;
+			<< "\nThank you for playing! =)\n" << "\033[0m" << std::endl;
 			exit (0);
 		}
+	}
+}
+
+void	GameHandler::levelScreenInput(sf::Event &event, GameHandler &game)
+{
+	if (event.type == sf::Event::KeyReleased)
+		return ;
+
+	if (event.key.code == sf::Keyboard::Key::Up) // scancode vs key ???
+		startmenu.decrementSelector();
+	else if (event.key.code == sf::Keyboard::Key::Down) // scancode vs key ???
+		startmenu.incrementSelector();
+	else if (event.key.code == sf::Keyboard::Key::Enter)
+	{
+		switch (startmenu.getSelector())
+		{
+			case 0:
+				game.initGame("maps/level_1.txt");
+				gameState = SnakeStill;
+				break ;
+			case 1:
+				game.initGame("maps/level_2.txt");
+				gameState = SnakeStill;
+				break ;
+			case 2:
+				game.initGame("maps/level_3.txt");
+				gameState = SnakeStill;
+				break ;
+			case 3:
+				gameState = StartScreen;
+				startmenu.setLevelScreenState(false);
+				break ;
+			default:
+				break ;
+		}
+		
+		startmenu.resetSelector();
+		startmenu.setLevelScreenState(false);
+
 	}
 }
 
@@ -283,17 +342,10 @@ void	GameHandler::resetGame()
 {
 	map.resetMap();
 	snake.resetSnake(map.getSnakeStartPos(), map.getMapWidth(), map.getMapHeight());
-	score.resetScore();
 	arrowVec.clear();
 
 	boostMeter.setText("BOOST METER", sf::Vector2f(WINDOW_WIDTH / 2 - 52, 0), sf::Color::White);
 	boostMeter.setFontSize(14);
-
-	for (Tower &temp : *towerVec)
-	{
-		temp.getSprite().setColor(sf::Color::White);
-		temp.getWeaponSprite().setColor(sf::Color::White);
-	}
 
 	gameState = StartScreen;
 }
@@ -379,7 +431,6 @@ void	GameHandler::displayStartMenu()
 
 
 
-
 /*
 	GETTERS
 */
@@ -399,6 +450,12 @@ void	GameHandler::setGameState(int state)
 {
 	gameState = state;
 }
+
+void	GameHandler::setCustomMapState(int state)
+{
+	customMap = state;
+}
+
 
 
 

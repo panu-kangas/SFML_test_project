@@ -7,17 +7,20 @@ class ScoreCounter : public TextBox
 {
 	private:
 
-	int	score;
+	int			appleCount;
+	TextBox		info;
 
 	public:
 
-	ScoreCounter() : score(0) {};
+	ScoreCounter();
 	~ScoreCounter() {};
 
 	std::string	getScoreString();
 
-	void	addScore(int add);
-	void	resetScore();
+	bool	decrementCounter();
+	void	setCounter(int appleTotal);
+
+	void	drawScore(sf::RenderWindow &window);
 
 };
 

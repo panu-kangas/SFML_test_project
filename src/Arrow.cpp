@@ -1,7 +1,7 @@
 #include "Arrow.hpp"
 
 
-Arrow::Arrow(sf::Vector2f initCoord, sf::Texture &texture, sf::Vector2f snakePos) : arrowVel(140.0)
+Arrow::Arrow(sf::Vector2f initCoord, sf::Texture &texture, sf::Vector2f snakePos) : arrowVel(220.0)
 {
 	coord = initCoord;
 	
@@ -107,8 +107,8 @@ sf::Vector2f	Arrow::getArrowTipCoord()
 
 	arrowTipCoord = coord;
 
-	arrowTipCoord.x += dirVec.x * (sprite.getLocalBounds().width / 2);
-	arrowTipCoord.y += dirVec.y * (sprite.getLocalBounds().height / 2);
+	arrowTipCoord.x += dirVec.x * (6 / 2);
+	arrowTipCoord.y += dirVec.y * (30 / 2);
 
 	return (arrowTipCoord);
 }

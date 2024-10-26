@@ -19,7 +19,6 @@ SnakeBody::SnakeBody()
 
 void	SnakeBody::InitBody(sf::RenderWindow &window, sf::Texture &bodyText, sf::Vector2f startPos, int num)
 {
-	// sf::Vector2u windowSize = window.getSize();
 
 	this->bodySprite.setTexture(bodyText);
 
@@ -141,7 +140,7 @@ void	SnakeBody::resetBody(sf::Vector2f startPos)
 	bodyWorldCoord.y = startPos.y * TILE_SIZE;
 	moveStartCounter = -2;
 
-	bodySprite.setPosition(-100, -100);
+	bodySprite.setPosition(-100, -100); // Just to get them out of the picture
 
 	turnPointVec.clear();
 	newDirVec.clear();

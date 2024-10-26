@@ -22,8 +22,10 @@ class GameHandler
 	Snake			snake;
 	ScoreCounter	score;
 	StartMenu		startmenu;
+
 	TextBox			snakeStartInfo;
 	TextBox			boostMeter;
+	TextBox			endInfo;
 
 	sf::RenderWindow	*window;
 
@@ -36,6 +38,7 @@ class GameHandler
 	int			gameState;
 
 	bool		spaceReleased;
+	bool		customMap;
 
 
 
@@ -62,7 +65,8 @@ class GameHandler
 	void	drawGame(float dt);
 
 	void	displayStartMenu();
-	void	startMenuInput(sf::Event &event);
+	void	startMenuInput(sf::Event &event, char *argMap);
+	void	levelScreenInput(sf::Event &event, GameHandler &game);
 
 	void	resetGame();
 
@@ -72,7 +76,7 @@ class GameHandler
 	int		getGameState();
 
 	void	setGameState(int state);
-//	void	setSpaceState(bool state);
+	void	setCustomMapState(int state);
 
 };
 

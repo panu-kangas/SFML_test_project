@@ -1,5 +1,6 @@
 #include "Tower.hpp"
 #include "Map.hpp"
+#include <math.h>
 
 
 // Constructor

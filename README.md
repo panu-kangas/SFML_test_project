@@ -44,7 +44,9 @@ Run the following commands in your terminal:
 
 As mentioned earlier, this game is a snake-based 2D-game. The player controls a snake-character, that moves constantly on the map. At the moment the game has 3 built-in levels you can play.  
  
-Additonally, you can also give one map-file as an argument to the program (e.g. ```./snake_2d PATH_TO_MY_MAP_FILE```), and it will then use it instead. So if you want to create your own map and test it out, go ahead and try it 🙂  
+Additonally, you can also give one map-file as an argument to the program  
+(e.g. ```./snake_2d PATH_TO_MY_MAP_FILE```)  
+and it will then use it instead. So if you want to create your own map and test it out, go ahead and try it 🙂  
 You can look into the ```maps```folder for example maps, but they are just basic text files with the map layout written in simple characters.  
 (0 = grass, 1 = wall, T = Tower, C = Collectible, S = Snake)
 

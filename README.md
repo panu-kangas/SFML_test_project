@@ -64,5 +64,13 @@ Watch out for the nasty towers though, because they are trying to shoot you!
 
 ### Losing conditions
 
-If you hit a wall, a tower or one of the arrows fired by the tower, you lose 🙁 
+If you hit a wall, a tower or one of the arrows fired by the tower, you lose 🙁
+
+# Future develompent ideas
+
+I want to develop this game further once I have more time on my hands. I will fix/create at least the following things:  
+
+1. Fixing snake's hitbox (it's now rectangular, even when the snake sprite is round... very annoying, sorry about that 🙈)
+2. Adding destructable objects and bombs. I want to add a game mechanic where the snake can collect bombs that are found in the map, and then use them to destroy obstacles from it's path. I think this would make the game more fun! 🙂
+3. Adding a score system. I'm thinking of either a time based system (the faster you collect all the apples, the greater score you get) or a game speed based system (in the beginning of the level, player can choose a game speed. The greater the speed, the greater the score for collecting all of the apples).
 

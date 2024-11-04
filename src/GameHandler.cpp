@@ -242,9 +242,9 @@ void	GameHandler::startMenuInput(sf::Event &event, char *argMap)
 	if (event.type == sf::Event::KeyReleased)
 		return ;
 
-	if (event.key.code == sf::Keyboard::Key::Up) // scancode vs key ???
+	if (event.key.scancode == sf::Keyboard::Scancode::W)
 		startmenu.decrementSelector();
-	else if (event.key.code == sf::Keyboard::Key::Down) // scancode vs key ???
+	else if (event.key.scancode == sf::Keyboard::Scancode::S)
 		startmenu.incrementSelector();
 	else if (event.key.code == sf::Keyboard::Key::Enter)
 	{
@@ -272,9 +272,9 @@ void	GameHandler::levelScreenInput(sf::Event &event, GameHandler &game)
 	if (event.type == sf::Event::KeyReleased)
 		return ;
 
-	if (event.key.code == sf::Keyboard::Key::Up) // scancode vs key ???
+	if (event.key.scancode == sf::Keyboard::Scancode::W)
 		startmenu.decrementSelector();
-	else if (event.key.code == sf::Keyboard::Key::Down) // scancode vs key ???
+	else if (event.key.scancode == sf::Keyboard::Scancode::S)
 		startmenu.incrementSelector();
 	else if (event.key.code == sf::Keyboard::Key::Enter)
 	{

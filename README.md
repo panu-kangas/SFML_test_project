@@ -2,7 +2,7 @@
 
 Snake_SFML is a simple game written in C++. It's based on the classic snake-game, but has additional features developed by me.  
 
-The program utilizes the SFML (Simple and Fast Multimedia Library) and uses CMake as it's build system. It should work on macOS (tested), Linux (tested) and on Windows using Visual Studio -program (tested).  
+The program utilizes the SFML (Simple and Fast Multimedia Library) and uses CMake as it's build system. It should work on macOS, Linux and on Windows using Visual Studio -program.  
  
 NOTE:  
 If you are using Windows, you might need to move the executable file (called "snake_2d") from the out/build -folder to the root of the repository. I'll fix this later, sorry for the inconvenience 🙈
